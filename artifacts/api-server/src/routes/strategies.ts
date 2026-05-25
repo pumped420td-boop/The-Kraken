@@ -28,7 +28,7 @@ router.get("/strategies", (_req, res) => {
 router.get("/strategies/votes", async (_req, res) => {
   try {
     const coins = COINS.filter((c) => store.marketCache[c.symbol]);
-    const results = await analyzeCoins(coins.slice(0, 20)); // limit to 20 for performance
+    const results = await analyzeCoins(coins);
 
     res.json({
       results: results.map((r) => ({

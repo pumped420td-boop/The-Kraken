@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -26,11 +27,20 @@ import {
 } from "@workspace/api-client-react";
 import { useColors } from "@/hooks/useColors";
 
+const SCREEN_H_PAD = 16; // horizontal padding on each side of content
+const CARD_PAD = 16;     // horizontal padding inside card
+const INPUT_W = 72;      // fixed width of the number input box
+const ROW_GAP = 10;      // gap between info and input
+
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { width: screenWidth } = useWindowDimensions();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+
+  // Width available for the label/desc inside a card row
+  const infoWidth = screenWidth - SCREEN_H_PAD * 2 - CARD_PAD * 2 - INPUT_W - ROW_GAP;
 
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const { data: keysStatus } = useGetKeysStatus({});
@@ -52,7 +62,6 @@ export default function SettingsScreen() {
   const [profitTarget, setProfitTarget] = useState("5");
   const [trailingStop, setTrailingStop] = useState("2");
   const [voteThreshold, setVoteThreshold] = useState("4");
-  const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -82,7 +91,6 @@ export default function SettingsScreen() {
   };
 
   const handleSaveSettings = async () => {
-    setSavingSettings(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     updateSettings.mutate({
       data: {
@@ -94,7 +102,6 @@ export default function SettingsScreen() {
         voteThreshold: parseInt(voteThreshold) || 4,
       },
     });
-    setSavingSettings(false);
   };
 
   const handleModeToggle = (toLive: boolean) => {
@@ -128,6 +135,7 @@ export default function SettingsScreen() {
   };
 
   const isLive = settings?.mode === "live";
+  const cardWidth = screenWidth - SCREEN_H_PAD * 2;
 
   return (
     <ScrollView
@@ -136,9 +144,9 @@ export default function SettingsScreen() {
     >
       <Text style={[styles.title, { color: colors.foreground }]}>Settings</Text>
 
-      {/* API Keys */}
-      <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>KRAKEN API KEYS</Text>
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      {/* ── API Keys ── */}
+      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>KRAKEN API KEYS</Text>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, width: cardWidth }]}>
         {keysStatus?.configured ? (
           <View style={styles.keysConfigured}>
             <View style={[styles.keysBadge, { backgroundColor: `${(colors as any).success}22` }]}>
@@ -155,7 +163,7 @@ export default function SettingsScreen() {
             <Text style={[styles.cardNote, { color: colors.mutedForeground }]}>
               Keys are stored in memory only and never sent outside your server.
             </Text>
-            <View style={[styles.inputGroup, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+            <View style={[styles.inputRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
               <Feather name="key" size={14} color={colors.mutedForeground} />
               <TextInput
                 placeholder="API Key"
@@ -165,52 +173,50 @@ export default function SettingsScreen() {
                 secureTextEntry={!showKey}
                 autoCapitalize="none"
                 autoCorrect={false}
-                style={[styles.input, { color: colors.foreground, fontFamily: "Inter_400Regular" }]}
+                style={[styles.textInput, { color: colors.foreground }]}
               />
               <TouchableOpacity onPress={() => setShowKey(!showKey)}>
                 <Feather name={showKey ? "eye-off" : "eye"} size={16} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
-            <View style={[styles.inputGroup, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+            <View style={[styles.inputRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
               <Feather name="lock" size={14} color={colors.mutedForeground} />
               <TextInput
                 placeholder="API Secret"
                 placeholderTextColor={colors.mutedForeground}
                 value={apiSecret}
                 onChangeText={setApiSecret}
-                secureTextEntry={true}
+                secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
-                style={[styles.input, { color: colors.foreground, fontFamily: "Inter_400Regular" }]}
+                style={[styles.textInput, { color: colors.foreground }]}
               />
             </View>
             <TouchableOpacity
               onPress={handleSaveKeys}
               disabled={saveKeys.isPending}
-              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
             >
               {saveKeys.isPending ? (
                 <ActivityIndicator color={colors.primaryForeground} size="small" />
               ) : (
-                <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>Save Keys</Text>
+                <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>Save Keys</Text>
               )}
             </TouchableOpacity>
           </>
         )}
       </View>
 
-      {/* Trading Mode */}
-      <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>TRADING MODE</Text>
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      {/* ── Trading Mode ── */}
+      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>TRADING MODE</Text>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, width: cardWidth }]}>
         <View style={styles.modeRow}>
           <View style={styles.modeInfo}>
             <Text style={[styles.modeTitle, { color: colors.foreground }]}>
               {isLive ? "Live Trading" : "Paper Trading"}
             </Text>
             <Text style={[styles.modeSub, { color: colors.mutedForeground }]}>
-              {isLive
-                ? "Real orders on Kraken with real funds"
-                : "Simulated trades with $10,000 virtual balance"}
+              {isLive ? "Real orders on Kraken with real funds" : "Simulated trades with $10,000 virtual balance"}
             </Text>
           </View>
           <Switch
@@ -230,76 +236,69 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      {/* Bot Parameters */}
-      <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>BOT PARAMETERS</Text>
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-
-        <SettingRow
-          label="Balance Allocation"
-          desc="% of USD balance to use for trading"
-          value={allocation}
-          onChangeText={setAllocation}
-          unit="%"
-          colors={colors}
-        />
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        <SettingRow
-          label="Profit Target"
-          desc="Minimum profit before trailing stop activates"
-          value={profitTarget}
-          onChangeText={setProfitTarget}
-          unit="%"
-          colors={colors}
-        />
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        <SettingRow
-          label="Trailing Stop Loss"
-          desc="Close trade if price drops this % from peak"
-          value={trailingStop}
-          onChangeText={setTrailingStop}
-          unit="%"
-          colors={colors}
-        />
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        <SettingRow
-          label="Vote Threshold"
-          desc="Min strategy buy votes to open a trade (max 7)"
-          value={voteThreshold}
-          onChangeText={setVoteThreshold}
-          unit="/7"
-          colors={colors}
-        />
+      {/* ── Bot Parameters ── */}
+      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>BOT PARAMETERS</Text>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, width: cardWidth }]}>
+        {[
+          { label: "Balance Allocation", desc: "% of USD balance to use for trading", value: allocation, setter: setAllocation, unit: "%" },
+          { label: "Profit Target", desc: "Minimum profit before trailing stop activates", value: profitTarget, setter: setProfitTarget, unit: "%" },
+          { label: "Trailing Stop Loss", desc: "Close trade if price drops this % from peak", value: trailingStop, setter: setTrailingStop, unit: "%" },
+          { label: "Vote Threshold", desc: "Min strategy buy votes to open a trade (max 7)", value: voteThreshold, setter: setVoteThreshold, unit: "/7" },
+        ].map((row, i) => (
+          <React.Fragment key={row.label}>
+            {i > 0 && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
+            <View style={styles.paramRow}>
+              <View style={{ width: infoWidth }}>
+                <Text style={[styles.paramLabel, { color: colors.foreground }]} numberOfLines={1}>
+                  {row.label}
+                </Text>
+                <Text style={[styles.paramDesc, { color: colors.mutedForeground }]} numberOfLines={2}>
+                  {row.desc}
+                </Text>
+              </View>
+              <View style={[styles.numBox, { backgroundColor: colors.secondary, borderColor: colors.border, width: INPUT_W }]}>
+                <TextInput
+                  value={row.value}
+                  onChangeText={row.setter}
+                  keyboardType="numeric"
+                  style={[styles.numInput, { color: colors.foreground, width: INPUT_W - 28 }]}
+                />
+                <Text style={[styles.numUnit, { color: colors.mutedForeground }]}>{row.unit}</Text>
+              </View>
+            </View>
+          </React.Fragment>
+        ))}
 
         <TouchableOpacity
           onPress={handleSaveSettings}
           disabled={updateSettings.isPending}
-          style={[styles.saveBtn, { backgroundColor: colors.primary, marginTop: 16 }]}
+          style={[styles.actionBtn, { backgroundColor: colors.primary, marginTop: 16 }]}
         >
           {updateSettings.isPending ? (
             <ActivityIndicator color={colors.primaryForeground} size="small" />
           ) : (
             <>
               <Feather name="check" size={16} color={colors.primaryForeground} />
-              <Text style={[styles.saveBtnText, { color: colors.primaryForeground }]}>Save Settings</Text>
+              <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>Save Settings</Text>
             </>
           )}
         </TouchableOpacity>
       </View>
 
-      {/* How it works */}
-      <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>HOW IT WORKS</Text>
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      {/* ── How It Works ── */}
+      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>HOW IT WORKS</Text>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, width: cardWidth }]}>
         {[
           { icon: "activity" as const, title: "7 Simultaneous Strategies", desc: "RSI, MACD, Bollinger, EMA, VWAP, Momentum, and ML Pattern all run at once" },
-          { icon: "check-square" as const, title: "Weighted Voting", desc: `A trade opens when ${settings?.voteThreshold ?? 4}+ strategies vote BUY with weighted confidence` },
+          { icon: "check-square" as const, title: "Weighted Voting", desc: `A trade opens when ${settings?.voteThreshold ?? 4}+ strategies vote BUY` },
           { icon: "trending-up" as const, title: "Smart Profit Taking", desc: `Takes profit at ${settings?.profitTarget ?? 5}% minimum, then trails with a ${settings?.trailingStop ?? 2}% stop` },
           { icon: "cpu" as const, title: "Continuous Learning", desc: "Strategy weights auto-adjust based on historical win rates per coin" },
         ].map((item, i) => (
-          <View key={i} style={[styles.howItem, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
+          <View key={i} style={[styles.howRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
             <View style={[styles.howIcon, { backgroundColor: colors.accent }]}>
               <Feather name={item.icon} size={16} color={colors.primary} />
             </View>
-            <View style={styles.howText}>
+            <View style={{ flex: 1 }}>
               <Text style={[styles.howTitle, { color: colors.foreground }]}>{item.title}</Text>
               <Text style={[styles.howDesc, { color: colors.mutedForeground }]}>{item.desc}</Text>
             </View>
@@ -310,77 +309,37 @@ export default function SettingsScreen() {
   );
 }
 
-function SettingRow({
-  label,
-  desc,
-  value,
-  onChangeText,
-  unit,
-  colors,
-}: {
-  label: string;
-  desc: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  unit: string;
-  colors: ReturnType<typeof useColors>;
-}) {
-  return (
-    <View style={styles.settingRow}>
-      <View style={styles.settingInfo}>
-        <Text style={[styles.settingLabel, { color: colors.foreground }]} numberOfLines={1}>
-          {label}
-        </Text>
-        <Text style={[styles.settingDesc, { color: colors.mutedForeground }]} numberOfLines={2}>
-          {desc}
-        </Text>
-      </View>
-      <View style={[styles.settingInput, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType="numeric"
-          style={[styles.settingInputText, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}
-        />
-        <Text style={[styles.settingUnit, { color: colors.mutedForeground }]}>{unit}</Text>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: 16, flexGrow: 1 },
+  content: { paddingHorizontal: SCREEN_H_PAD },
   title: { fontSize: 28, fontFamily: "Inter_700Bold", marginBottom: 20 },
-  sectionTitle: { fontSize: 11, fontFamily: "Inter_600SemiBold", letterSpacing: 1, marginBottom: 10, marginTop: 4 },
-  card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 20, width: "100%" },
+  sectionLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", letterSpacing: 1, marginBottom: 10, marginTop: 4 },
+  card: { borderRadius: 16, borderWidth: 1, padding: CARD_PAD, marginBottom: 20 },
   cardNote: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 14, lineHeight: 18 },
   keysConfigured: { gap: 12 },
   keysBadge: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10 },
   keysBadgeText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   removeBtn: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, alignSelf: "flex-start" },
   removeBtnText: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  inputGroup: { flexDirection: "row", alignItems: "center", borderRadius: 10, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 10 },
-  input: { flex: 1, fontSize: 15 },
-  saveBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 12, paddingVertical: 14, gap: 8 },
-  saveBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
+  inputRow: { flexDirection: "row", alignItems: "center", borderRadius: 10, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 10 },
+  textInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular" },
+  actionBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 12, paddingVertical: 14, gap: 8 },
+  actionBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
   modeRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  modeInfo: { flex: 1, minWidth: 0 },
+  modeInfo: { flex: 1 },
   modeTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
   modeSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 18 },
   warningBanner: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 8, padding: 10, marginTop: 14 },
   warningText: { flex: 1, fontSize: 12, fontFamily: "Inter_500Medium", lineHeight: 18 },
-  settingRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12 },
-  settingInfo: { flex: 1, minWidth: 0, marginRight: 12 },
-  settingLabel: { fontSize: 14, fontFamily: "Inter_500Medium" },
-  settingDesc: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 16 },
-  settingInput: { flexDirection: "row", alignItems: "center", borderRadius: 8, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 8, width: 76, flexShrink: 0 },
-  settingInputText: { fontSize: 16, textAlign: "center", flex: 1 },
-  settingUnit: { fontSize: 12, fontFamily: "Inter_400Regular" },
+  paramRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 13, gap: ROW_GAP },
+  paramLabel: { fontSize: 14, fontFamily: "Inter_500Medium" },
+  paramDesc: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 16 },
+  numBox: { flexDirection: "row", alignItems: "center", borderRadius: 8, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 8, overflow: "hidden" },
+  numInput: { fontSize: 15, fontFamily: "Inter_700Bold", textAlign: "center" },
+  numUnit: { fontSize: 11, fontFamily: "Inter_400Regular" },
   divider: { height: 1 },
-  howItem: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingVertical: 14 },
+  howRow: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingVertical: 14 },
   howIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  howText: { flex: 1, minWidth: 0 },
   howTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   howDesc: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 18 },
 });
