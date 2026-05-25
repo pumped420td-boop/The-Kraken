@@ -1,22 +1,34 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Kraken Trading Bot API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: keys
+    description: API key management
+  - name: settings
+    description: Bot settings
+  - name: bot
+    description: Bot control
+  - name: trades
+    description: Trade history
+  - name: strategies
+    description: Strategy management
+  - name: market
+    description: Market data
+  - name: portfolio
+    description: Portfolio overview
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,201 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /keys/status:
+    get:
+      operationId: getKeysStatus
+      tags: [keys]
+      summary: Check if API keys are configured
+      responses:
+        "200":
+          description: Keys status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeysStatus"
+
+  /keys:
+    post:
+      operationId: saveKeys
+      tags: [keys]
+      summary: Save Kraken API keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiKeysInput"
+      responses:
+        "200":
+          description: Keys saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeysStatus"
+    delete:
+      operationId: deleteKeys
+      tags: [keys]
+      summary: Remove Kraken API keys
+      responses:
+        "200":
+          description: Keys removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeysStatus"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get current bot settings
+      responses:
+        "200":
+          description: Current settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update bot settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsInput"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+  /bot/start:
+    post:
+      operationId: startBot
+      tags: [bot]
+      summary: Start the trading bot
+      responses:
+        "200":
+          description: Bot started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /bot/stop:
+    post:
+      operationId: stopBot
+      tags: [bot]
+      summary: Stop the trading bot
+      responses:
+        "200":
+          description: Bot stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /bot/status:
+    get:
+      operationId: getBotStatus
+      tags: [bot]
+      summary: Get bot status and active trades
+      responses:
+        "200":
+          description: Bot status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /trades:
+    get:
+      operationId: getTrades
+      tags: [trades]
+      summary: Get trade history
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [paper, live, all]
+            default: all
+      responses:
+        "200":
+          description: Trade history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TradeList"
+
+  /strategies:
+    get:
+      operationId: getStrategies
+      tags: [strategies]
+      summary: Get all strategies with performance and current votes
+      responses:
+        "200":
+          description: Strategies list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StrategiesResponse"
+
+  /strategies/votes:
+    get:
+      operationId: getVotes
+      tags: [strategies]
+      summary: Get current voting results for all coins
+      responses:
+        "200":
+          description: Vote results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VotesResponse"
+
+  /market/ticker:
+    get:
+      operationId: getTicker
+      tags: [market]
+      summary: Get live prices for all tracked coins
+      responses:
+        "200":
+          description: Market tickers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TickerResponse"
+
+  /portfolio:
+    get:
+      operationId: getPortfolio
+      tags: [portfolio]
+      summary: Get portfolio summary
+      responses:
+        "200":
+          description: Portfolio overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +238,296 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    KeysStatus:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        paperMode:
+          type: boolean
+      required: [configured, paperMode]
+
+    ApiKeysInput:
+      type: object
+      properties:
+        apiKey:
+          type: string
+        apiSecret:
+          type: string
+      required: [apiKey, apiSecret]
+
+    Settings:
+      type: object
+      properties:
+        allocation:
+          type: number
+          description: Percentage of USD balance to allocate (0-100)
+        mode:
+          type: string
+          enum: [paper, live]
+        profitTarget:
+          type: number
+          description: Minimum profit % to take (default 5)
+        trailingStop:
+          type: number
+          description: Trailing stop loss % (default 2)
+        maxConcurrentTrades:
+          type: integer
+          description: Max trades at once (default 2)
+        voteThreshold:
+          type: integer
+          description: Minimum votes needed to trigger a trade (default 4)
+      required: [allocation, mode, profitTarget, trailingStop, maxConcurrentTrades, voteThreshold]
+
+    SettingsInput:
+      type: object
+      properties:
+        allocation:
+          type: number
+        mode:
+          type: string
+          enum: [paper, live]
+        profitTarget:
+          type: number
+        trailingStop:
+          type: number
+        maxConcurrentTrades:
+          type: integer
+        voteThreshold:
+          type: integer
+
+    Trade:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        name:
+          type: string
+        entryPrice:
+          type: number
+        currentPrice:
+          type: number
+        quantity:
+          type: number
+        investedUsd:
+          type: number
+        profitPercent:
+          type: number
+        profitUsd:
+          type: number
+        status:
+          type: string
+          enum: [open, closed, stopped]
+        strategy:
+          type: string
+        winningStrategies:
+          type: array
+          items:
+            type: string
+        openedAt:
+          type: string
+        closedAt:
+          type: string
+          nullable: true
+        paperMode:
+          type: boolean
+        highestPrice:
+          type: number
+        trailingActive:
+          type: boolean
+      required: [id, symbol, name, entryPrice, currentPrice, quantity, investedUsd, profitPercent, profitUsd, status, strategy, winningStrategies, openedAt, paperMode, highestPrice, trailingActive]
+
+    TradeList:
+      type: object
+      properties:
+        trades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trade"
+        total:
+          type: integer
+        openCount:
+          type: integer
+        closedCount:
+          type: integer
+      required: [trades, total, openCount, closedCount]
+
+    Strategy:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        weight:
+          type: number
+          description: Current learned weight (0-1)
+        winRate:
+          type: number
+        totalSignals:
+          type: integer
+        successfulSignals:
+          type: integer
+        profitContribution:
+          type: number
+        currentSignal:
+          type: string
+          enum: [buy, sell, hold, inactive]
+      required: [id, name, description, weight, winRate, totalSignals, successfulSignals, profitContribution, currentSignal]
+
+    StrategiesResponse:
+      type: object
+      properties:
+        strategies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Strategy"
+        learningCycles:
+          type: integer
+        lastUpdated:
+          type: string
+      required: [strategies, learningCycles, lastUpdated]
+
+    StrategyVote:
+      type: object
+      properties:
+        strategyId:
+          type: string
+        strategyName:
+          type: string
+        vote:
+          type: string
+          enum: [buy, sell, hold]
+        confidence:
+          type: number
+        weight:
+          type: number
+      required: [strategyId, strategyName, vote, confidence, weight]
+
+    VoteResult:
+      type: object
+      properties:
+        symbol:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        totalWeightedVotes:
+          type: number
+        buyScore:
+          type: number
+        sellScore:
+          type: number
+        holdScore:
+          type: number
+        decision:
+          type: string
+          enum: [buy, sell, hold]
+        confidence:
+          type: number
+        votes:
+          type: array
+          items:
+            $ref: "#/components/schemas/StrategyVote"
+      required: [symbol, name, price, totalWeightedVotes, buyScore, sellScore, holdScore, decision, confidence, votes]
+
+    VotesResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/VoteResult"
+        timestamp:
+          type: string
+      required: [results, timestamp]
+
+    MarketTicker:
+      type: object
+      properties:
+        symbol:
+          type: string
+        krakenPair:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        change24h:
+          type: number
+        volume24h:
+          type: number
+        high24h:
+          type: number
+        low24h:
+          type: number
+        category:
+          type: string
+          enum: [crypto, meme]
+      required: [symbol, krakenPair, name, price, change24h, volume24h, high24h, low24h, category]
+
+    TickerResponse:
+      type: object
+      properties:
+        tickers:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketTicker"
+        lastUpdated:
+          type: string
+      required: [tickers, lastUpdated]
+
+    BotStatus:
+      type: object
+      properties:
+        running:
+          type: boolean
+        mode:
+          type: string
+          enum: [paper, live]
+        activeTradeCount:
+          type: integer
+        activeTrades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trade"
+        balance:
+          type: number
+        allocatedBalance:
+          type: number
+        lastScanAt:
+          type: string
+          nullable: true
+        scanIntervalSeconds:
+          type: integer
+      required: [running, mode, activeTradeCount, activeTrades, balance, allocatedBalance, scanIntervalSeconds]
+
+    Portfolio:
+      type: object
+      properties:
+        totalBalance:
+          type: number
+        availableBalance:
+          type: number
+        allocatedBalance:
+          type: number
+        allocatedInTrades:
+          type: number
+        totalPnl:
+          type: number
+        totalPnlPercent:
+          type: number
+        winRate:
+          type: number
+        totalTrades:
+          type: integer
+        paperMode:
+          type: boolean
+      required: [totalBalance, availableBalance, allocatedBalance, allocatedInTrades, totalPnl, totalPnlPercent, winRate, totalTrades, paperMode]

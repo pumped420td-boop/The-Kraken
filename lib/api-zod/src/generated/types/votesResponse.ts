@@ -5,7 +5,9 @@
  * Kraken Trading Bot API
  * OpenAPI spec version: 0.1.0
  */
+import type { VoteResult } from './voteResult';
 
-export interface HealthStatus {
-  status: string;
+export interface VotesResponse {
+  results: VoteResult[];
+  timestamp: string;
 }
