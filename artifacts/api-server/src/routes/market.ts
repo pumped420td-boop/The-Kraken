@@ -5,20 +5,38 @@ import { updateTickerCache } from "../lib/kraken.js";
 
 const router = Router();
 
-router.get("/market/ticker", async (req, res) => {
-  // Refresh if cache is stale (>15s)
-  const now = Date.now();
-  const stale = COINS.some((c) => {
-    const cached = store.marketCache[c.symbol];
-    return !cached || now - cached.lastUpdated > 15_000;
-  });
+// Single warmup promise — reused by all requests so we never double-fetch on startup
+let warmupPromise: Promise<void> | null = null;
 
-  if (stale) {
-    try {
-      await updateTickerCache(COINS.map((c) => c.krakenPair));
-    } catch {
-      // Return cached if refresh fails
-    }
+function ensureWarmup(): Promise<void> {
+  if (!warmupPromise) {
+    warmupPromise = updateTickerCache(COINS.map((c) => c.krakenPair))
+      .catch(() => {})
+      .finally(() => {
+        // Allow re-warmup after 30 seconds (handled by stale check below)
+        setTimeout(() => { warmupPromise = null; }, 30_000);
+      });
+  }
+  return warmupPromise;
+}
+
+// Pre-warm cache immediately when server starts
+ensureWarmup();
+
+router.get("/market/ticker", async (_req, res) => {
+  const now = Date.now();
+  const hasAny = COINS.some((c) => store.marketCache[c.symbol]);
+
+  if (!hasAny) {
+    // First request ever — block until we have at least some data
+    await ensureWarmup();
+  } else {
+    // Check staleness — refresh in background without blocking
+    const stale = COINS.some((c) => {
+      const cached = store.marketCache[c.symbol];
+      return !cached || now - cached.lastUpdated > 15_000;
+    });
+    if (stale) ensureWarmup();
   }
 
   const tickers = COINS.map((coin) => {
@@ -36,10 +54,7 @@ router.get("/market/ticker", async (req, res) => {
     };
   }).filter((t) => t.price > 0);
 
-  res.json({
-    tickers,
-    lastUpdated: new Date().toISOString(),
-  });
+  res.json({ tickers, lastUpdated: new Date().toISOString() });
 });
 
 export default router;

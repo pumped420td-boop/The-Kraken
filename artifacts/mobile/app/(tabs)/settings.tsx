@@ -350,10 +350,10 @@ function SettingRow({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: 16 },
+  content: { paddingHorizontal: 16, flexGrow: 1 },
   title: { fontSize: 28, fontFamily: "Inter_700Bold", marginBottom: 20 },
   sectionTitle: { fontSize: 11, fontFamily: "Inter_600SemiBold", letterSpacing: 1, marginBottom: 10, marginTop: 4 },
-  card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 20 },
+  card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 20, width: "100%" },
   cardNote: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 14, lineHeight: 18 },
   keysConfigured: { gap: 12 },
   keysBadge: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10 },
