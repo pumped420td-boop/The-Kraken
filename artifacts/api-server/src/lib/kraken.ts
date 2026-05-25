@@ -3,8 +3,8 @@ import { store } from "./store.js";
 import type { OHLCCandle } from "./store.js";
 
 const BASE_URL = "https://api.kraken.com";
-const OHLC_TTL_MS = 60_000; // 1 minute cache for OHLC
-const TICKER_TTL_MS = 10_000; // 10 second cache for ticker
+const OHLC_TTL_MS = 60_000;
+const TICKER_TTL_MS = 10_000;
 
 function sign(path: string, nonce: string, data: string, secret: string): string {
   const sha256 = createHash("sha256").update(nonce + data).digest();
@@ -65,9 +65,17 @@ export interface KrakenTickerResult {
   };
 }
 
-export async function fetchTicker(pairs: string[]): Promise<KrakenTickerResult> {
+/**
+ * Fetch ticker for multiple pairs, returning partial results even if some pairs are invalid.
+ * Kraken may return both error[] and result{} simultaneously when some pairs in a batch are unknown.
+ */
+async function fetchTickerPartial(pairs: string[]): Promise<KrakenTickerResult> {
   const pairStr = pairs.join(",");
-  return publicRequest<KrakenTickerResult>("Ticker", { pair: pairStr });
+  const url = `${BASE_URL}/0/public/Ticker?pair=${pairStr}`;
+  const res = await fetch(url, { headers: { "User-Agent": "KrakenTradingBot/1.0" } });
+  if (!res.ok) return {};
+  const json = (await res.json()) as { error?: string[]; result?: KrakenTickerResult };
+  return json.result ?? {};
 }
 
 export async function fetchOHLC(pair: string, interval = 60): Promise<OHLCCandle[]> {
@@ -141,23 +149,40 @@ export async function updateTickerCache(pairs: string[]): Promise<void> {
     chunks.push(pairs.slice(i, i + 10));
   }
 
+  const { COINS } = await import("./coins.js");
+
   for (const chunk of chunks) {
     try {
-      const result = await fetchTicker(chunk);
+      let result = await fetchTickerPartial(chunk);
+
+      // If the whole chunk returned nothing, retry each pair individually
+      // (all pairs in chunk may be invalid, or a network blip)
+      if (Object.keys(result).length === 0 && chunk.length > 1) {
+        for (const pair of chunk) {
+          const r = await fetchTickerPartial([pair]);
+          result = { ...result, ...r };
+          await new Promise((resolve) => setTimeout(resolve, 150));
+        }
+      }
+
       for (const [krakenKey, data] of Object.entries(result)) {
         const price = parseFloat(data.c[0]);
         const open = parseFloat(data.o);
         const change24h = open > 0 ? ((price - open) / open) * 100 : 0;
 
-        // find matching coin by pair
-        const { COINS } = await import("./coins.js");
         const coin = COINS.find(
           (c) =>
             c.krakenPair === krakenKey ||
             krakenKey.includes(c.symbol) ||
-            c.krakenPair.replace("X", "").replace("Z", "") === krakenKey.replace("X", "").replace("Z", "")
+            c.krakenPair.replace(/X/g, "").replace(/Z/g, "") ===
+              krakenKey.replace(/X/g, "").replace(/Z/g, "")
         );
-        const symbol = coin?.symbol ?? krakenKey.replace("USD", "").replace("ZUSD", "").replace("X", "");
+        const symbol =
+          coin?.symbol ??
+          krakenKey
+            .replace("ZUSD", "")
+            .replace("USD", "")
+            .replace(/^X/, "");
 
         store.marketCache[symbol] = {
           price,
@@ -169,8 +194,8 @@ export async function updateTickerCache(pairs: string[]): Promise<void> {
         };
       }
     } catch {
-      // Skip failed chunks
+      // Skip failed chunks silently
     }
-    await new Promise((r) => setTimeout(r, 200)); // rate limit
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 }

@@ -34,7 +34,14 @@ export default function SettingsScreen() {
 
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const { data: keysStatus } = useGetKeysStatus({});
-  const updateSettings = useUpdateSettings({ mutation: { onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() }) } });
+  const updateSettings = useUpdateSettings({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetPortfolioQueryKey() });
+      },
+    },
+  });
   const saveKeys = useSaveKeys({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
   const deleteKeys = useDeleteKeys({ mutation: { onSuccess: () => queryClient.invalidateQueries() } });
 
@@ -70,11 +77,7 @@ export default function SettingsScreen() {
   const handleDeleteKeys = () => {
     Alert.alert("Remove API Keys", "This will also switch to paper trading mode.", [
       { text: "Cancel", style: "cancel" },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: () => deleteKeys.mutate({}),
-      },
+      { text: "Remove", style: "destructive", onPress: () => deleteKeys.mutate({}) },
     ]);
   };
 
@@ -84,8 +87,10 @@ export default function SettingsScreen() {
     updateSettings.mutate({
       data: {
         allocation: parseFloat(allocation) || 50,
+        mode: settings?.mode ?? "paper",
         profitTarget: parseFloat(profitTarget) || 5,
         trailingStop: parseFloat(trailingStop) || 2,
+        maxConcurrentTrades: settings?.maxConcurrentTrades ?? 2,
         voteThreshold: parseInt(voteThreshold) || 4,
       },
     });
@@ -97,6 +102,13 @@ export default function SettingsScreen() {
       Alert.alert("API Keys Required", "Add your Kraken API keys before switching to live mode.");
       return;
     }
+    const base = {
+      allocation: settings?.allocation ?? 50,
+      profitTarget: settings?.profitTarget ?? 5,
+      trailingStop: settings?.trailingStop ?? 2,
+      maxConcurrentTrades: settings?.maxConcurrentTrades ?? 2,
+      voteThreshold: settings?.voteThreshold ?? 4,
+    };
     if (toLive) {
       Alert.alert(
         "Enable Live Trading",
@@ -106,12 +118,12 @@ export default function SettingsScreen() {
           {
             text: "Enable Live",
             style: "destructive",
-            onPress: () => updateSettings.mutate({ data: { mode: "live" } }),
+            onPress: () => updateSettings.mutate({ data: { ...base, mode: "live" } }),
           },
         ]
       );
     } else {
-      updateSettings.mutate({ data: { mode: "paper" } });
+      updateSettings.mutate({ data: { ...base, mode: "paper" } });
     }
   };
 
@@ -124,14 +136,14 @@ export default function SettingsScreen() {
     >
       <Text style={[styles.title, { color: colors.foreground }]}>Settings</Text>
 
-      {/* API Keys Section */}
+      {/* API Keys */}
       <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>KRAKEN API KEYS</Text>
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         {keysStatus?.configured ? (
           <View style={styles.keysConfigured}>
-            <View style={[styles.keysBadge, { backgroundColor: `${colors.success}22` }]}>
-              <Feather name="check-circle" size={16} color={colors.success} />
-              <Text style={[styles.keysBadgeText, { color: colors.success }]}>API Keys Configured</Text>
+            <View style={[styles.keysBadge, { backgroundColor: `${(colors as any).success}22` }]}>
+              <Feather name="check-circle" size={16} color={(colors as any).success} />
+              <Text style={[styles.keysBadgeText, { color: (colors as any).success }]}>API Keys Configured</Text>
             </View>
             <TouchableOpacity onPress={handleDeleteKeys} style={[styles.removeBtn, { borderColor: colors.destructive }]}>
               <Feather name="trash-2" size={14} color={colors.destructive} />
@@ -192,9 +204,13 @@ export default function SettingsScreen() {
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.modeRow}>
           <View style={styles.modeInfo}>
-            <Text style={[styles.modeTitle, { color: colors.foreground }]}>{isLive ? "Live Trading" : "Paper Trading"}</Text>
+            <Text style={[styles.modeTitle, { color: colors.foreground }]}>
+              {isLive ? "Live Trading" : "Paper Trading"}
+            </Text>
             <Text style={[styles.modeSub, { color: colors.mutedForeground }]}>
-              {isLive ? "Real orders on Kraken with real funds" : "Simulated trades with $10,000 virtual balance"}
+              {isLive
+                ? "Real orders on Kraken with real funds"
+                : "Simulated trades with $10,000 virtual balance"}
             </Text>
           </View>
           <Switch
@@ -214,79 +230,45 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      {/* Bot Settings */}
+      {/* Bot Parameters */}
       <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>BOT PARAMETERS</Text>
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
 
-        <View style={styles.settingRow}>
-          <View style={styles.settingInfo}>
-            <Text style={[styles.settingLabel, { color: colors.foreground }]}>Balance Allocation</Text>
-            <Text style={[styles.settingDesc, { color: colors.mutedForeground }]}>% of USD balance to use for trading</Text>
-          </View>
-          <View style={[styles.settingInput, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-            <TextInput
-              value={allocation}
-              onChangeText={setAllocation}
-              keyboardType="numeric"
-              style={[styles.settingInputText, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}
-            />
-            <Text style={[styles.settingUnit, { color: colors.mutedForeground }]}>%</Text>
-          </View>
-        </View>
-
+        <SettingRow
+          label="Balance Allocation"
+          desc="% of USD balance to use for trading"
+          value={allocation}
+          onChangeText={setAllocation}
+          unit="%"
+          colors={colors}
+        />
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-        <View style={styles.settingRow}>
-          <View style={styles.settingInfo}>
-            <Text style={[styles.settingLabel, { color: colors.foreground }]}>Profit Target</Text>
-            <Text style={[styles.settingDesc, { color: colors.mutedForeground }]}>Minimum profit before trailing stop activates</Text>
-          </View>
-          <View style={[styles.settingInput, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-            <TextInput
-              value={profitTarget}
-              onChangeText={setProfitTarget}
-              keyboardType="numeric"
-              style={[styles.settingInputText, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}
-            />
-            <Text style={[styles.settingUnit, { color: colors.mutedForeground }]}>%</Text>
-          </View>
-        </View>
-
+        <SettingRow
+          label="Profit Target"
+          desc="Minimum profit before trailing stop activates"
+          value={profitTarget}
+          onChangeText={setProfitTarget}
+          unit="%"
+          colors={colors}
+        />
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-        <View style={styles.settingRow}>
-          <View style={styles.settingInfo}>
-            <Text style={[styles.settingLabel, { color: colors.foreground }]}>Trailing Stop Loss</Text>
-            <Text style={[styles.settingDesc, { color: colors.mutedForeground }]}>Close trade if price drops this % from peak</Text>
-          </View>
-          <View style={[styles.settingInput, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-            <TextInput
-              value={trailingStop}
-              onChangeText={setTrailingStop}
-              keyboardType="numeric"
-              style={[styles.settingInputText, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}
-            />
-            <Text style={[styles.settingUnit, { color: colors.mutedForeground }]}>%</Text>
-          </View>
-        </View>
-
+        <SettingRow
+          label="Trailing Stop Loss"
+          desc="Close trade if price drops this % from peak"
+          value={trailingStop}
+          onChangeText={setTrailingStop}
+          unit="%"
+          colors={colors}
+        />
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-        <View style={styles.settingRow}>
-          <View style={styles.settingInfo}>
-            <Text style={[styles.settingLabel, { color: colors.foreground }]}>Vote Threshold</Text>
-            <Text style={[styles.settingDesc, { color: colors.mutedForeground }]}>Min strategy buy votes to open a trade (max 7)</Text>
-          </View>
-          <View style={[styles.settingInput, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-            <TextInput
-              value={voteThreshold}
-              onChangeText={setVoteThreshold}
-              keyboardType="numeric"
-              style={[styles.settingInputText, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}
-            />
-            <Text style={[styles.settingUnit, { color: colors.mutedForeground }]}>/7</Text>
-          </View>
-        </View>
+        <SettingRow
+          label="Vote Threshold"
+          desc="Min strategy buy votes to open a trade (max 7)"
+          value={voteThreshold}
+          onChangeText={setVoteThreshold}
+          unit="/7"
+          colors={colors}
+        />
 
         <TouchableOpacity
           onPress={handleSaveSettings}
@@ -328,6 +310,44 @@ export default function SettingsScreen() {
   );
 }
 
+function SettingRow({
+  label,
+  desc,
+  value,
+  onChangeText,
+  unit,
+  colors,
+}: {
+  label: string;
+  desc: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  unit: string;
+  colors: ReturnType<typeof useColors>;
+}) {
+  return (
+    <View style={styles.settingRow}>
+      <View style={styles.settingInfo}>
+        <Text style={[styles.settingLabel, { color: colors.foreground }]} numberOfLines={1}>
+          {label}
+        </Text>
+        <Text style={[styles.settingDesc, { color: colors.mutedForeground }]} numberOfLines={2}>
+          {desc}
+        </Text>
+      </View>
+      <View style={[styles.settingInput, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          keyboardType="numeric"
+          style={[styles.settingInputText, { color: colors.foreground, fontFamily: "Inter_600SemiBold" }]}
+        />
+        <Text style={[styles.settingUnit, { color: colors.mutedForeground }]}>{unit}</Text>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: 16 },
@@ -345,22 +365,22 @@ const styles = StyleSheet.create({
   saveBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 12, paddingVertical: 14, gap: 8 },
   saveBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
   modeRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  modeInfo: { flex: 1 },
+  modeInfo: { flex: 1, minWidth: 0 },
   modeTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
   modeSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 18 },
   warningBanner: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 8, padding: 10, marginTop: 14 },
   warningText: { flex: 1, fontSize: 12, fontFamily: "Inter_500Medium", lineHeight: 18 },
-  settingRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 12 },
-  settingInfo: { flex: 1, marginRight: 16 },
+  settingRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12 },
+  settingInfo: { flex: 1, minWidth: 0, marginRight: 12 },
   settingLabel: { fontSize: 14, fontFamily: "Inter_500Medium" },
   settingDesc: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 16 },
-  settingInput: { flexDirection: "row", alignItems: "center", borderRadius: 8, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, minWidth: 72 },
-  settingInputText: { fontSize: 16, textAlign: "center", minWidth: 36 },
-  settingUnit: { fontSize: 12, fontFamily: "Inter_400Regular", marginLeft: 4 },
+  settingInput: { flexDirection: "row", alignItems: "center", borderRadius: 8, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 8, width: 76, flexShrink: 0 },
+  settingInputText: { fontSize: 16, textAlign: "center", flex: 1 },
+  settingUnit: { fontSize: 12, fontFamily: "Inter_400Regular" },
   divider: { height: 1 },
   howItem: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingVertical: 14 },
   howIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  howText: { flex: 1 },
+  howText: { flex: 1, minWidth: 0 },
   howTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   howDesc: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 18 },
 });
