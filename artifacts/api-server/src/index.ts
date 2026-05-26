@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { refreshVotesCache, startVotesCacheTimer } from "./lib/trader";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,11 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // After market cache warms up (~3s), do first votes computation then start background timer
+  setTimeout(async () => {
+    await refreshVotesCache();
+    startVotesCacheTimer();
+    logger.info("Votes cache initialized");
+  }, 4_000);
 });

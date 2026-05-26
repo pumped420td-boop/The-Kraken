@@ -7,7 +7,10 @@ import { logger } from "./logger.js";
 import type { StoredTrade } from "./store.js";
 
 const SCAN_INTERVAL_MS = 30_000; // 30 seconds
+const VOTES_REFRESH_MS = 30_000; // background votes refresh interval
+
 let scanInterval: ReturnType<typeof setInterval> | null = null;
+let votesInterval: ReturnType<typeof setInterval> | null = null;
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -149,6 +152,19 @@ async function updateActiveTrades(): Promise<void> {
   }
 }
 
+/** Recompute votes for all coins and stash result in store — never blocks HTTP handlers */
+async function refreshVotesCache(): Promise<void> {
+  try {
+    const coins = COINS.filter((c) => store.marketCache[c.symbol]);
+    if (coins.length === 0) return;
+    const results = await analyzeCoins(coins);
+    store.votesCache = results;
+    store.votesCachedAt = new Date().toISOString();
+  } catch (err) {
+    logger.warn({ err }, "Votes cache refresh failed");
+  }
+}
+
 async function scan(): Promise<void> {
   if (!store.running) return;
 
@@ -193,6 +209,9 @@ async function scan(): Promise<void> {
     }
 
     store.lastScanAt = new Date().toISOString();
+
+    // Refresh votes cache after every scan so the UI gets fresh data without blocking
+    await refreshVotesCache();
   } catch (err) {
     logger.error({ err }, "Scan error");
   }
@@ -202,6 +221,12 @@ export async function startBot(): Promise<void> {
   if (store.running) return;
   store.running = true;
   logger.info({ mode: store.settings.mode }, "Bot started");
+
+  // Stop standalone votes timer — the scan loop now handles refreshes
+  if (votesInterval) {
+    clearInterval(votesInterval);
+    votesInterval = null;
+  }
 
   // Initial market data load
   try {
@@ -222,6 +247,20 @@ export async function stopBot(): Promise<void> {
     scanInterval = null;
   }
   logger.info("Bot stopped");
+
+  // Keep votes fresh even while bot is off (market cache still has data)
+  if (!votesInterval) {
+    votesInterval = setInterval(refreshVotesCache, VOTES_REFRESH_MS);
+  }
 }
 
-export { SCAN_INTERVAL_MS };
+/**
+ * Start a background votes-cache timer for use before the bot is ever started.
+ * Called once at server startup so the Signals tab works immediately.
+ */
+export function startVotesCacheTimer(): void {
+  if (votesInterval || store.running) return;
+  votesInterval = setInterval(refreshVotesCache, VOTES_REFRESH_MS);
+}
+
+export { SCAN_INTERVAL_MS, refreshVotesCache };

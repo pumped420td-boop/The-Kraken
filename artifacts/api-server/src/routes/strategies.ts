@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { store } from "../lib/store.js";
-import { COINS } from "../lib/coins.js";
-import { analyzeCoins } from "../lib/voting.js";
 
 const router = Router();
 
@@ -25,29 +23,25 @@ router.get("/strategies", (_req, res) => {
   });
 });
 
-router.get("/strategies/votes", async (_req, res) => {
-  try {
-    const coins = COINS.filter((c) => store.marketCache[c.symbol]);
-    const results = await analyzeCoins(coins);
+// Returns pre-computed votes from background cache — responds instantly, no event-loop block
+router.get("/strategies/votes", (_req, res) => {
+  const cached = store.votesCache;
 
-    res.json({
-      results: results.map((r) => ({
-        symbol: r.symbol,
-        name: r.name,
-        price: r.price,
-        totalWeightedVotes: r.totalWeightedVotes,
-        buyScore: r.buyScore,
-        sellScore: r.sellScore,
-        holdScore: r.holdScore,
-        decision: r.decision,
-        confidence: r.confidence,
-        votes: r.votes,
-      })),
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to compute votes" });
-  }
+  res.json({
+    results: cached.map((r) => ({
+      symbol: r.symbol,
+      name: r.name,
+      price: r.price,
+      totalWeightedVotes: r.totalWeightedVotes,
+      buyScore: r.buyScore,
+      sellScore: r.sellScore,
+      holdScore: r.holdScore,
+      decision: r.decision,
+      confidence: r.confidence,
+      votes: r.votes,
+    })),
+    timestamp: store.votesCachedAt ?? new Date().toISOString(),
+  });
 });
 
 export default router;

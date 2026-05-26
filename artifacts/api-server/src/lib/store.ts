@@ -151,6 +151,10 @@ class Store {
   marketCache: Record<string, MarketEntry> = {};
   ohlcCache: Record<string, { candles: OHLCCandle[]; lastUpdated: number }> = {};
 
+  // Pre-computed votes cache — updated in background, served instantly from GET /strategies/votes
+  votesCache: import("./voting.js").VoteResult[] = [];
+  votesCachedAt: string | null = null;
+
   learningCycles = 0;
   lastScanAt: string | null = null;
   running = false;
