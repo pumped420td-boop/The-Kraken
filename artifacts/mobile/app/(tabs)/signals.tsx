@@ -29,11 +29,21 @@ export default function SignalsScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
   const { data: stratData, isLoading: stratLoading, refetch: refetchStrat } = useGetStrategies({
-    query: { refetchInterval: 15000, queryKey: getGetStrategiesQueryKey() },
+    query: {
+      refetchInterval: 15000,
+      queryKey: getGetStrategiesQueryKey(),
+      placeholderData: (prev: any) => prev,
+      retry: 1,
+    },
   });
   const { data: voteData, isLoading: voteLoading, refetch: refetchVotes } = useGetVotes({
-    query: { refetchInterval: 15000, queryKey: getGetVotesQueryKey() },
-    enabled: tab === "votes",
+    query: {
+      refetchInterval: 15000,
+      queryKey: getGetVotesQueryKey(),
+      placeholderData: (prev: any) => prev,
+      retry: 1,
+      enabled: tab === "votes",
+    },
   } as any);
 
   const handleRefresh = async () => {

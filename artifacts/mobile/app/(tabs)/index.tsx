@@ -35,10 +35,20 @@ export default function DashboardScreen() {
   const bottomPad = Platform.OS === "web" ? 34 : 0;
 
   const { data: portfolio, isLoading: portfolioLoading, refetch: refetchPortfolio } = useGetPortfolio({
-    query: { refetchInterval: 5000, queryKey: getGetPortfolioQueryKey() },
+    query: {
+      refetchInterval: 5000,
+      queryKey: getGetPortfolioQueryKey(),
+      placeholderData: (prev: any) => prev,
+      retry: 1,
+    },
   });
   const { data: botStatus, refetch: refetchBot } = useGetBotStatus({
-    query: { refetchInterval: 5000, queryKey: getGetBotStatusQueryKey() },
+    query: {
+      refetchInterval: 5000,
+      queryKey: getGetBotStatusQueryKey(),
+      placeholderData: (prev: any) => prev,
+      retry: 1,
+    },
   });
   const { data: settings } = useGetSettings({});
   const [refreshing, setRefreshing] = React.useState(false);

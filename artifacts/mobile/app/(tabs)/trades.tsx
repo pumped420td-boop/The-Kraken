@@ -27,7 +27,14 @@ export default function TradesScreen() {
 
   const { data, isLoading, refetch } = useGetTrades(
     {},
-    { query: { refetchInterval: 5000, queryKey: getGetTradesQueryKey() } }
+    {
+      query: {
+        refetchInterval: 5000,
+        queryKey: getGetTradesQueryKey(),
+        placeholderData: (prev: any) => prev,
+        retry: 1,
+      },
+    }
   );
 
   const handleRefresh = async () => {

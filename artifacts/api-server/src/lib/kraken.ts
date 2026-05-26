@@ -14,6 +14,13 @@ function sign(path: string, nonce: string, data: string, secret: string): string
   return hmac;
 }
 
+/** Timeout (ms) for all Kraken HTTP requests — prevents indefinite hangs */
+const REQUEST_TIMEOUT_MS = 8_000;
+
+function withTimeout(ms: number): AbortSignal {
+  return AbortSignal.timeout(ms);
+}
+
 async function publicRequest<T>(path: string, params?: Record<string, string>): Promise<T> {
   const url = new URL(`${BASE_URL}/0/public/${path}`);
   if (params) {
@@ -21,6 +28,7 @@ async function publicRequest<T>(path: string, params?: Record<string, string>): 
   }
   const res = await fetch(url.toString(), {
     headers: { "User-Agent": "KrakenTradingBot/1.0" },
+    signal: withTimeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`Kraken public request failed: ${res.status}`);
   const json = (await res.json()) as { error: string[]; result: T };
@@ -72,10 +80,17 @@ export interface KrakenTickerResult {
 async function fetchTickerPartial(pairs: string[]): Promise<KrakenTickerResult> {
   const pairStr = pairs.join(",");
   const url = `${BASE_URL}/0/public/Ticker?pair=${pairStr}`;
-  const res = await fetch(url, { headers: { "User-Agent": "KrakenTradingBot/1.0" } });
-  if (!res.ok) return {};
-  const json = (await res.json()) as { error?: string[]; result?: KrakenTickerResult };
-  return json.result ?? {};
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "KrakenTradingBot/1.0" },
+      signal: withTimeout(REQUEST_TIMEOUT_MS),
+    });
+    if (!res.ok) return {};
+    const json = (await res.json()) as { error?: string[]; result?: KrakenTickerResult };
+    return json.result ?? {};
+  } catch {
+    return {};
+  }
 }
 
 export async function fetchOHLC(pair: string, interval = 60): Promise<OHLCCandle[]> {

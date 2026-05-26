@@ -28,7 +28,12 @@ export default function MarketScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
   const { data, isLoading, refetch } = useGetTicker({
-    query: { refetchInterval: 15000, queryKey: getGetTickerQueryKey() },
+    query: {
+      refetchInterval: 15000,
+      queryKey: getGetTickerQueryKey(),
+      placeholderData: (prev: any) => prev,
+      retry: 1,
+    },
   });
 
   const handleRefresh = async () => {

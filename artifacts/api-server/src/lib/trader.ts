@@ -1,7 +1,7 @@
 import { store } from "./store.js";
 import { COINS } from "./coins.js";
 import { analyzeCoins, countBuyVotes } from "./voting.js";
-import { updateTickerCache, fetchUsdBalance, placeMarketBuy, placeMarketSell, prefetchAllOHLC } from "./kraken.js";
+import { updateTickerCache, fetchUsdBalance, placeMarketBuy, placeMarketSell } from "./kraken.js";
 import { encodePattern, recordPatternOutcome } from "./strategies/ml.js";
 import { logger } from "./logger.js";
 import type { StoredTrade } from "./store.js";
@@ -157,8 +157,6 @@ async function refreshVotesCache(): Promise<void> {
   try {
     const coins = COINS.filter((c) => store.marketCache[c.symbol]);
     if (coins.length === 0) return;
-    // Pre-fetch OHLC concurrently so analyzeCoins hits cache instead of making 40 serial requests
-    await prefetchAllOHLC(coins.map((c) => c.krakenPair));
     const results = await analyzeCoins(coins);
     store.votesCache = results;
     store.votesCachedAt = new Date().toISOString();
@@ -192,8 +190,6 @@ async function scan(): Promise<void> {
     if (openTrades.length < store.settings.maxConcurrentTrades) {
       const activeSymbols = new Set(openTrades.map((t) => t.symbol));
       const candidates = COINS.filter((c) => !activeSymbols.has(c.symbol));
-      // Ensure OHLC is warm before analyzing so analyzeCoins never blocks on network I/O
-      await prefetchAllOHLC(candidates.map((c) => c.krakenPair));
       const voteResults = await analyzeCoins(candidates);
 
       const buySignals = voteResults
