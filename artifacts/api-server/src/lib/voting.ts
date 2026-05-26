@@ -33,15 +33,26 @@ export interface VoteResult {
   votes: (StrategySignal & { weight: number })[];
 }
 
+const OHLC_FETCH_CONCURRENCY = 5;
+
 export async function analyzeCoins(coins: Coin[]): Promise<VoteResult[]> {
   const results: VoteResult[] = [];
+
+  // Fetch all OHLC data concurrently (max 5 at a time) so cache misses don't
+  // queue up as 40 sequential network round-trips.
+  const ohlcMap = new Map<string, ReturnType<typeof fetchOHLC> extends Promise<infer T> ? T : never>();
+  for (let i = 0; i < coins.length; i += OHLC_FETCH_CONCURRENCY) {
+    const batch = coins.slice(i, i + OHLC_FETCH_CONCURRENCY);
+    const fetched = await Promise.all(batch.map((c) => fetchOHLC(c.krakenPair).catch(() => [] as Awaited<ReturnType<typeof fetchOHLC>>)));
+    batch.forEach((c, idx) => ohlcMap.set(c.krakenPair, fetched[idx]!));
+  }
 
   for (const coin of coins) {
     const cached = store.marketCache[coin.symbol];
     if (!cached) continue;
 
     const price = cached.price;
-    const candles = await fetchOHLC(coin.krakenPair);
+    const candles = ohlcMap.get(coin.krakenPair) ?? [];
     if (candles.length < 10) continue;
 
     const votes: (StrategySignal & { weight: number })[] = [];

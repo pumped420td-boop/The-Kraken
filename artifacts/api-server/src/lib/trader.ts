@@ -185,14 +185,21 @@ async function scan(): Promise<void> {
     // Update open trade prices + check exits
     await updateActiveTrades();
 
-    // Find new opportunities via voting
+    // Analyze ALL coins once — share the result for both trading decisions and the votes cache.
+    // This avoids the previous pattern of calling analyzeCoins twice per scan.
+    const allCoins = COINS.filter((c) => store.marketCache[c.symbol]);
+    const allVoteResults = await analyzeCoins(allCoins);
+
+    // Persist votes cache for the Signals tab
+    store.votesCache = allVoteResults;
+    store.votesCachedAt = new Date().toISOString();
+
+    // Find new trade opportunities using the results we just computed
     const openTrades = store.getOpenTrades();
     if (openTrades.length < store.settings.maxConcurrentTrades) {
       const activeSymbols = new Set(openTrades.map((t) => t.symbol));
-      const candidates = COINS.filter((c) => !activeSymbols.has(c.symbol));
-      const voteResults = await analyzeCoins(candidates);
-
-      const buySignals = voteResults
+      const buySignals = allVoteResults
+        .filter((r) => !activeSymbols.has(r.symbol))
         .filter((r) => {
           const buyVotes = countBuyVotes(r.votes);
           return r.decision === "buy" && buyVotes >= store.settings.voteThreshold;
@@ -209,9 +216,6 @@ async function scan(): Promise<void> {
     }
 
     store.lastScanAt = new Date().toISOString();
-
-    // Refresh votes cache after every scan so the UI gets fresh data without blocking
-    await refreshVotesCache();
   } catch (err) {
     logger.error({ err }, "Scan error");
   }

@@ -190,17 +190,9 @@ export async function updateTickerCache(pairs: string[]): Promise<void> {
 
   for (const chunk of chunks) {
     try {
-      let result = await fetchTickerPartial(chunk);
-
-      // If the whole chunk returned nothing, retry each pair individually
-      // (all pairs in chunk may be invalid, or a network blip)
-      if (Object.keys(result).length === 0 && chunk.length > 1) {
-        for (const pair of chunk) {
-          const r = await fetchTickerPartial([pair]);
-          result = { ...result, ...r };
-          await new Promise((resolve) => setTimeout(resolve, 150));
-        }
-      }
+      const result = await fetchTickerPartial(chunk);
+      // If Kraken returned nothing for this chunk (timeout, rate-limit, blip) just skip it.
+      // The next refresh cycle will fill in the gap — never retry inline.
 
       for (const [krakenKey, data] of Object.entries(result)) {
         const price = parseFloat(data.c[0]);

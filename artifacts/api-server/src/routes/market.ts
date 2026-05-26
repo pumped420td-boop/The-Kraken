@@ -23,21 +23,16 @@ function ensureWarmup(): Promise<void> {
 // Pre-warm cache immediately when server starts
 ensureWarmup();
 
-router.get("/market/ticker", async (_req, res) => {
+router.get("/market/ticker", (_req, res) => {
+  // Trigger background warmup/refresh if needed — never block the response.
+  // On first load the cache will be empty and the client polls every 15 s, so
+  // data appears within one or two refetch cycles (a few seconds after startup).
   const now = Date.now();
-  const hasAny = COINS.some((c) => store.marketCache[c.symbol]);
-
-  if (!hasAny) {
-    // First request ever — block until we have at least some data
-    await ensureWarmup();
-  } else {
-    // Check staleness — refresh in background without blocking
-    const stale = COINS.some((c) => {
-      const cached = store.marketCache[c.symbol];
-      return !cached || now - cached.lastUpdated > 15_000;
-    });
-    if (stale) ensureWarmup();
-  }
+  const stale = COINS.some((c) => {
+    const cached = store.marketCache[c.symbol];
+    return !cached || now - cached.lastUpdated > 15_000;
+  });
+  if (stale) ensureWarmup();
 
   const tickers = COINS.map((coin) => {
     const cached = store.marketCache[coin.symbol];
