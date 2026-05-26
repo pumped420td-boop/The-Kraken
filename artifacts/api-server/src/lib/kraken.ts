@@ -3,7 +3,7 @@ import { store } from "./store.js";
 import type { OHLCCandle } from "./store.js";
 
 const BASE_URL = "https://api.kraken.com";
-const OHLC_TTL_MS = 60_000;
+const OHLC_TTL_MS = 5 * 60_000; // 5 min — 60-min candles change slowly
 const TICKER_TTL_MS = 10_000;
 
 function sign(path: string, nonce: string, data: string, secret: string): string {
@@ -107,6 +107,28 @@ export async function fetchOHLC(pair: string, interval = 60): Promise<OHLCCandle
     return candles;
   } catch {
     return store.ohlcCache[pair]?.candles ?? [];
+  }
+}
+
+/**
+ * Pre-fetch OHLC for many pairs concurrently without hammering Kraken.
+ * Skips pairs whose cache is still fresh. Safe to call from a background timer.
+ */
+export async function prefetchAllOHLC(pairs: string[], concurrency = 4): Promise<void> {
+  const stale = pairs.filter((p) => {
+    const cached = store.ohlcCache[p];
+    return !cached || Date.now() - cached.lastUpdated >= OHLC_TTL_MS - 30_000;
+  });
+  if (stale.length === 0) return;
+
+  // Process in batches of `concurrency` to respect Kraken rate limits
+  for (let i = 0; i < stale.length; i += concurrency) {
+    const batch = stale.slice(i, i + concurrency);
+    await Promise.all(batch.map((pair) => fetchOHLC(pair).catch(() => {})));
+    // Small pause between batches to avoid rate-limit errors
+    if (i + concurrency < stale.length) {
+      await new Promise((r) => setTimeout(r, 300));
+    }
   }
 }
 

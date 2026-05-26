@@ -167,8 +167,21 @@ class Store {
     return this.settings.mode === "paper" ? this.paperBalance : this.liveBalance;
   }
 
+  /**
+   * Total portfolio value: cash + money currently tied up in open trades.
+   * For paper mode this keeps allocation stable as trades open/close — the
+   * cash balance drops when a trade opens but the in-trade value rises by the
+   * same amount, so the total stays constant and allocation percentages work
+   * correctly across multiple concurrent trades.
+   */
+  getTotalPortfolioValue(): number {
+    return this.settings.mode === "paper"
+      ? this.paperBalance + this.getAmountInTrades()
+      : this.liveBalance;
+  }
+
   getAllocatedAmount(): number {
-    return (this.getBalance() * this.settings.allocation) / 100;
+    return (this.getTotalPortfolioValue() * this.settings.allocation) / 100;
   }
 
   getAmountInTrades(): number {
