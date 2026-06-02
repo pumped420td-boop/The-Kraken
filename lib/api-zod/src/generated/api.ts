@@ -107,7 +107,9 @@ export const StartBotResponse = zod.object({
   "closedAt": zod.string().nullish(),
   "paperMode": zod.boolean(),
   "highestPrice": zod.number(),
-  "trailingActive": zod.boolean()
+  "trailingActive": zod.boolean(),
+  "entryConfidence": zod.number().describe('Voting confidence score (0-1) at the time this trade was opened'),
+  "closeReason": zod.enum(['profit', 'stop', 'sell_signal', 'manual', 'swapped']).nullish().describe('Why the trade was closed')
 })),
   "balance": zod.number(),
   "allocatedBalance": zod.number(),
@@ -140,7 +142,9 @@ export const StopBotResponse = zod.object({
   "closedAt": zod.string().nullish(),
   "paperMode": zod.boolean(),
   "highestPrice": zod.number(),
-  "trailingActive": zod.boolean()
+  "trailingActive": zod.boolean(),
+  "entryConfidence": zod.number().describe('Voting confidence score (0-1) at the time this trade was opened'),
+  "closeReason": zod.enum(['profit', 'stop', 'sell_signal', 'manual', 'swapped']).nullish().describe('Why the trade was closed')
 })),
   "balance": zod.number(),
   "allocatedBalance": zod.number(),
@@ -173,12 +177,44 @@ export const GetBotStatusResponse = zod.object({
   "closedAt": zod.string().nullish(),
   "paperMode": zod.boolean(),
   "highestPrice": zod.number(),
-  "trailingActive": zod.boolean()
+  "trailingActive": zod.boolean(),
+  "entryConfidence": zod.number().describe('Voting confidence score (0-1) at the time this trade was opened'),
+  "closeReason": zod.enum(['profit', 'stop', 'sell_signal', 'manual', 'swapped']).nullish().describe('Why the trade was closed')
 })),
   "balance": zod.number(),
   "allocatedBalance": zod.number(),
   "lastScanAt": zod.string().nullish(),
   "scanIntervalSeconds": zod.number()
+})
+
+
+/**
+ * @summary Manually close an open trade at current market price
+ */
+export const CloseTradeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const CloseTradeResponse = zod.object({
+  "id": zod.string(),
+  "symbol": zod.string(),
+  "name": zod.string(),
+  "entryPrice": zod.number(),
+  "currentPrice": zod.number(),
+  "quantity": zod.number(),
+  "investedUsd": zod.number(),
+  "profitPercent": zod.number(),
+  "profitUsd": zod.number(),
+  "status": zod.enum(['open', 'closed', 'stopped']),
+  "strategy": zod.string(),
+  "winningStrategies": zod.array(zod.string()),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullish(),
+  "paperMode": zod.boolean(),
+  "highestPrice": zod.number(),
+  "trailingActive": zod.boolean(),
+  "entryConfidence": zod.number().describe('Voting confidence score (0-1) at the time this trade was opened'),
+  "closeReason": zod.enum(['profit', 'stop', 'sell_signal', 'manual', 'swapped']).nullish().describe('Why the trade was closed')
 })
 
 
@@ -213,7 +249,9 @@ export const GetTradesResponse = zod.object({
   "closedAt": zod.string().nullish(),
   "paperMode": zod.boolean(),
   "highestPrice": zod.number(),
-  "trailingActive": zod.boolean()
+  "trailingActive": zod.boolean(),
+  "entryConfidence": zod.number().describe('Voting confidence score (0-1) at the time this trade was opened'),
+  "closeReason": zod.enum(['profit', 'stop', 'sell_signal', 'manual', 'swapped']).nullish().describe('Why the trade was closed')
 })),
   "total": zod.number(),
   "openCount": zod.number(),

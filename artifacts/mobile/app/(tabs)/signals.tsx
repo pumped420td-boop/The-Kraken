@@ -30,7 +30,8 @@ export default function SignalsScreen() {
 
   const { data: stratData, isLoading: stratLoading, refetch: refetchStrat } = useGetStrategies({
     query: {
-      refetchInterval: 15000,
+      refetchInterval: 30000,
+      refetchIntervalInBackground: false,
       queryKey: getGetStrategiesQueryKey(),
       placeholderData: (prev: any) => prev,
       retry: 1,
@@ -38,7 +39,8 @@ export default function SignalsScreen() {
   });
   const { data: voteData, isLoading: voteLoading, refetch: refetchVotes } = useGetVotes({
     query: {
-      refetchInterval: 15000,
+      refetchInterval: 30000,
+      refetchIntervalInBackground: false,
       queryKey: getGetVotesQueryKey(),
       placeholderData: (prev: any) => prev,
       retry: 1,

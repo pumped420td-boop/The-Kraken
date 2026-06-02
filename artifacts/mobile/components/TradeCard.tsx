@@ -1,5 +1,13 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useCloseTrade,
+  getGetTradesQueryKey,
+  getGetPortfolioQueryKey,
+  getGetBotStatusQueryKey,
+} from "@workspace/api-client-react";
 import { useColors } from "@/hooks/useColors";
 import type { Trade } from "@workspace/api-client-react";
 
@@ -9,10 +17,47 @@ interface Props {
 
 export function TradeCard({ trade }: Props) {
   const colors = useColors();
+  const queryClient = useQueryClient();
+  const [confirmClose, setConfirmClose] = useState(false);
   const isProfit = trade.profitPercent >= 0;
   const isOpen = trade.status === "open";
 
   const profitColor = isProfit ? (colors as any).success : colors.destructive;
+
+  const { mutateAsync: doClose, isPending: isClosing } = useCloseTrade({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetTradesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetPortfolioQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetBotStatusQueryKey() });
+        setConfirmClose(false);
+      },
+    },
+  });
+
+  const handleCloseTap = () => {
+    if (!confirmClose) {
+      setConfirmClose(true);
+      setTimeout(() => setConfirmClose(false), 3000);
+    } else {
+      doClose({ id: trade.id }).catch(() => {});
+    }
+  };
+
+  const statusLabel = () => {
+    if (isOpen) return trade.trailingActive ? "TRAILING" : "OPEN";
+    if (trade.closeReason === "swapped") return "SWAPPED";
+    if (trade.status === "stopped") return "STOPPED";
+    if (trade.closeReason === "manual") return "CLOSED";
+    return trade.status.toUpperCase();
+  };
+
+  const statusColor = () => {
+    if (isOpen) return colors.primary;
+    if (trade.closeReason === "swapped") return (colors as any).warning;
+    if (trade.status === "stopped") return colors.destructive;
+    return colors.mutedForeground;
+  };
 
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -22,11 +67,9 @@ export function TradeCard({ trade }: Props) {
           <Text style={[styles.name, { color: colors.mutedForeground }]}>{trade.name}</Text>
         </View>
         <View style={styles.rightTop}>
-          <View style={[styles.statusBadge, { backgroundColor: isOpen ? `${colors.primary}22` : `${colors.mutedForeground}22` }]}>
-            <View style={[styles.statusDot, { backgroundColor: isOpen ? colors.primary : colors.mutedForeground }]} />
-            <Text style={[styles.statusText, { color: isOpen ? colors.primary : colors.mutedForeground }]}>
-              {isOpen ? (trade.trailingActive ? "TRAILING" : "OPEN") : trade.status.toUpperCase()}
-            </Text>
+          <View style={[styles.statusBadge, { backgroundColor: `${statusColor()}22` }]}>
+            <View style={[styles.statusDot, { backgroundColor: statusColor() }]} />
+            <Text style={[styles.statusText, { color: statusColor() }]}>{statusLabel()}</Text>
           </View>
           <View style={[styles.modeBadge, { backgroundColor: trade.paperMode ? `${(colors as any).warning}22` : `${(colors as any).success}22` }]}>
             <Text style={[styles.modeText, { color: trade.paperMode ? (colors as any).warning : (colors as any).success }]}>
@@ -73,6 +116,31 @@ export function TradeCard({ trade }: Props) {
           ${trade.investedUsd.toFixed(0)} invested
         </Text>
       </View>
+
+      {isOpen && (
+        <TouchableOpacity
+          onPress={handleCloseTap}
+          disabled={isClosing}
+          style={[
+            styles.closeBtn,
+            {
+              backgroundColor: confirmClose ? `${colors.destructive}22` : `${colors.destructive}11`,
+              borderTopColor: colors.border,
+            },
+          ]}
+        >
+          {isClosing ? (
+            <ActivityIndicator size="small" color={colors.destructive} />
+          ) : (
+            <>
+              <Feather name={confirmClose ? "alert-triangle" : "x-circle"} size={13} color={colors.destructive} />
+              <Text style={[styles.closeBtnText, { color: colors.destructive }]}>
+                {confirmClose ? "Tap again to confirm close" : "Close Trade"}
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -138,4 +206,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   footerText: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  closeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+  },
+  closeBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
 });

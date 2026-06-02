@@ -29,7 +29,8 @@ export default function MarketScreen() {
 
   const { data, isLoading, refetch } = useGetTicker({
     query: {
-      refetchInterval: 15000,
+      refetchInterval: 30000,
+      refetchIntervalInBackground: false,
       queryKey: getGetTickerQueryKey(),
       placeholderData: (prev: any) => prev,
       retry: 1,

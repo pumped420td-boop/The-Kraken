@@ -29,7 +29,8 @@ export default function TradesScreen() {
     {},
     {
       query: {
-        refetchInterval: 5000,
+        refetchInterval: 10000,
+        refetchIntervalInBackground: false,
         queryKey: getGetTradesQueryKey(),
         placeholderData: (prev: any) => prev,
         retry: 1,

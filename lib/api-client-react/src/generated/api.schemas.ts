@@ -67,6 +67,20 @@ export const TradeStatus = {
   stopped: 'stopped',
 } as const;
 
+/**
+ * Why the trade was closed
+ */
+export type TradeCloseReason = typeof TradeCloseReason[keyof typeof TradeCloseReason] | null;
+
+
+export const TradeCloseReason = {
+  profit: 'profit',
+  stop: 'stop',
+  sell_signal: 'sell_signal',
+  manual: 'manual',
+  swapped: 'swapped',
+} as const;
+
 export interface Trade {
   id: string;
   symbol: string;
@@ -85,6 +99,10 @@ export interface Trade {
   paperMode: boolean;
   highestPrice: number;
   trailingActive: boolean;
+  /** Voting confidence score (0-1) at the time this trade was opened */
+  entryConfidence: number;
+  /** Why the trade was closed */
+  closeReason?: TradeCloseReason;
 }
 
 export interface TradeList {
@@ -222,6 +240,10 @@ export interface Portfolio {
   totalTrades: number;
   paperMode: boolean;
 }
+
+export type CloseTrade404 = {
+  error?: string;
+};
 
 export type GetTradesParams = {
 limit?: number;

@@ -5,6 +5,7 @@
  * Kraken Trading Bot API
  * OpenAPI spec version: 0.1.0
  */
+import type { TradeCloseReason } from './tradeCloseReason';
 import type { TradeStatus } from './tradeStatus';
 
 export interface Trade {
@@ -25,4 +26,8 @@ export interface Trade {
   paperMode: boolean;
   highestPrice: number;
   trailingActive: boolean;
+  /** Voting confidence score (0-1) at the time this trade was opened */
+  entryConfidence: number;
+  /** Why the trade was closed */
+  closeReason?: TradeCloseReason;
 }

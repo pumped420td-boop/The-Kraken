@@ -22,6 +22,7 @@ import type {
 import type {
   ApiKeysInput,
   BotStatus,
+  CloseTrade404,
   GetTradesParams,
   HealthStatus,
   KeysStatus,
@@ -30,6 +31,7 @@ import type {
   SettingsInput,
   StrategiesResponse,
   TickerResponse,
+  Trade,
   TradeList,
   VotesResponse
 } from './api.schemas';
@@ -705,6 +707,76 @@ export function useGetBotStatus<TData = Awaited<ReturnType<typeof getBotStatus>>
 
 
 
+
+export const getCloseTradeUrl = (id: string,) => {
+
+
+
+
+  return `/api/trades/${id}/close`
+}
+
+/**
+ * @summary Manually close an open trade at current market price
+ */
+export const closeTrade = async (id: string, options?: RequestInit): Promise<Trade> => {
+
+  return customFetch<Trade>(getCloseTradeUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCloseTradeMutationOptions = <TError = ErrorType<CloseTrade404>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeTrade>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof closeTrade>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['closeTrade'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof closeTrade>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  closeTrade(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CloseTradeMutationResult = NonNullable<Awaited<ReturnType<typeof closeTrade>>>
+
+    export type CloseTradeMutationError = ErrorType<CloseTrade404>
+
+    /**
+ * @summary Manually close an open trade at current market price
+ */
+export const useCloseTrade = <TError = ErrorType<CloseTrade404>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeTrade>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof closeTrade>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getCloseTradeMutationOptions(options));
+    }
 
 export const getGetTradesUrl = (params?: GetTradesParams,) => {
   const normalizedParams = new URLSearchParams();

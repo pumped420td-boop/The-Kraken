@@ -9,6 +9,7 @@
 export * from './apiKeysInput';
 export * from './botStatus';
 export * from './botStatusMode';
+export * from './closeTrade404';
 export * from './getTradesMode';
 export * from './getTradesParams';
 export * from './healthStatus';
@@ -27,6 +28,7 @@ export * from './strategyVote';
 export * from './strategyVoteVote';
 export * from './tickerResponse';
 export * from './trade';
+export * from './tradeCloseReason';
 export * from './tradeList';
 export * from './tradeStatus';
 export * from './voteResult';

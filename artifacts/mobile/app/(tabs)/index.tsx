@@ -36,7 +36,8 @@ export default function DashboardScreen() {
 
   const { data: portfolio, isLoading: portfolioLoading, refetch: refetchPortfolio } = useGetPortfolio({
     query: {
-      refetchInterval: 5000,
+      refetchInterval: 10000,
+      refetchIntervalInBackground: false,
       queryKey: getGetPortfolioQueryKey(),
       placeholderData: (prev: any) => prev,
       retry: 1,
@@ -44,7 +45,8 @@ export default function DashboardScreen() {
   });
   const { data: botStatus, refetch: refetchBot } = useGetBotStatus({
     query: {
-      refetchInterval: 5000,
+      refetchInterval: 10000,
+      refetchIntervalInBackground: false,
       queryKey: getGetBotStatusQueryKey(),
       placeholderData: (prev: any) => prev,
       retry: 1,

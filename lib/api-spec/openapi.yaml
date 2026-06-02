@@ -149,6 +149,34 @@ paths:
               schema:
                 $ref: "#/components/schemas/BotStatus"
 
+  /trades/{id}/close:
+    post:
+      operationId: closeTrade
+      tags: [trades]
+      summary: Manually close an open trade at current market price
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trade closed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trade"
+        "404":
+          description: Trade not found or already closed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
   /trades:
     get:
       operationId: getTrades
@@ -339,7 +367,15 @@ components:
           type: number
         trailingActive:
           type: boolean
-      required: [id, symbol, name, entryPrice, currentPrice, quantity, investedUsd, profitPercent, profitUsd, status, strategy, winningStrategies, openedAt, paperMode, highestPrice, trailingActive]
+        entryConfidence:
+          type: number
+          description: Voting confidence score (0-1) at the time this trade was opened
+        closeReason:
+          type: string
+          nullable: true
+          enum: [profit, stop, sell_signal, manual, swapped]
+          description: Why the trade was closed
+      required: [id, symbol, name, entryPrice, currentPrice, quantity, investedUsd, profitPercent, profitUsd, status, strategy, winningStrategies, openedAt, paperMode, highestPrice, trailingActive, entryConfidence]
 
     TradeList:
       type: object

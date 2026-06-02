@@ -35,7 +35,7 @@ const BotContext = createContext<BotContextValue>({
 
 export function BotProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const { data: botStatus } = useGetBotStatus({ query: { refetchInterval: 5000, queryKey: getGetBotStatusQueryKey() } });
+  const { data: botStatus } = useGetBotStatus({ query: { refetchInterval: 10000, refetchIntervalInBackground: false, queryKey: getGetBotStatusQueryKey() } });
   const { data: settings } = useGetSettings({});
   const startMutation = useStartBot({
     mutation: {

@@ -17,6 +17,8 @@ export interface StoredTrade {
   paperMode: boolean;
   highestPrice: number;
   trailingActive: boolean;
+  entryConfidence: number;
+  closeReason: "profit" | "stop" | "sell_signal" | "manual" | "swapped" | null;
 }
 
 export interface StoredSettings {

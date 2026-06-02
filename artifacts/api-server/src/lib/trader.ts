@@ -21,7 +21,8 @@ async function openTrade(
   krakenPair: string,
   name: string,
   price: number,
-  winningStrategies: string[]
+  winningStrategies: string[],
+  entryConfidence = 0
 ): Promise<void> {
   const openTrades = store.getOpenTrades();
   if (openTrades.length >= store.settings.maxConcurrentTrades) return;
@@ -67,13 +68,15 @@ async function openTrade(
     paperMode: store.settings.mode === "paper",
     highestPrice: price,
     trailingActive: false,
+    entryConfidence,
+    closeReason: null,
   };
 
   store.trades.push(trade);
   logger.info({ symbol, price, perTrade, mode: store.settings.mode }, "Trade opened");
 }
 
-async function closeTrade(trade: StoredTrade, reason: "profit" | "stop" | "sell_signal"): Promise<void> {
+export async function closeTrade(trade: StoredTrade, reason: "profit" | "stop" | "sell_signal" | "manual" | "swapped"): Promise<void> {
   const price = store.marketCache[trade.symbol]?.price ?? trade.currentPrice;
 
   if (store.settings.mode === "live") {
@@ -94,6 +97,7 @@ async function closeTrade(trade: StoredTrade, reason: "profit" | "stop" | "sell_
   trade.profitPercent = profitPercent;
   trade.status = reason === "stop" ? "stopped" : "closed";
   trade.closedAt = new Date().toISOString();
+  trade.closeReason = reason;
 
   if (store.settings.mode === "paper") {
     store.paperBalance += exitValue;
@@ -211,11 +215,50 @@ async function scan(): Promise<void> {
         const winningStrategies = signal.votes
           .filter((v) => v.vote === "buy")
           .map((v) => v.strategyId);
-        await openTrade(signal.symbol, COINS.find((c) => c.symbol === signal.symbol)!.krakenPair, signal.name, signal.price, winningStrategies);
+        await openTrade(signal.symbol, COINS.find((c) => c.symbol === signal.symbol)!.krakenPair, signal.name, signal.price, winningStrategies, signal.confidence);
       }
     }
 
     store.lastScanAt = new Date().toISOString();
+
+    // Swap logic: if all trade slots are full, check whether any idle coin now has
+    // significantly higher vote confidence than the weakest current trade.
+    const SWAP_MIN_ADVANTAGE = 0.20; // new signal must beat current trade by ≥20%
+    const currentOpen = store.getOpenTrades();
+    if (currentOpen.length >= store.settings.maxConcurrentTrades) {
+      const activeSymbols = new Set(currentOpen.map((t) => t.symbol));
+
+      // Current vote confidence for each open trade symbol
+      const activeVotes = allVoteResults.filter((r) => activeSymbols.has(r.symbol));
+      const weakestVote = activeVotes.sort((a, b) => a.confidence - b.confidence)[0];
+      const weakestTrade = weakestVote
+        ? currentOpen.find((t) => t.symbol === weakestVote.symbol)
+        : undefined;
+
+      if (weakestTrade && weakestVote) {
+        // Best new buy signal not in an active trade
+        const bestSwap = allVoteResults
+          .filter((r) => !activeSymbols.has(r.symbol))
+          .filter((r) => r.decision === "buy" && countBuyVotes(r.votes) >= store.settings.voteThreshold)
+          .sort((a, b) => b.confidence - a.confidence)[0];
+
+        if (bestSwap && bestSwap.confidence >= weakestVote.confidence + SWAP_MIN_ADVANTAGE) {
+          logger.info(
+            {
+              closing: weakestTrade.symbol,
+              closingConfidence: weakestVote.confidence.toFixed(3),
+              opening: bestSwap.symbol,
+              openingConfidence: bestSwap.confidence.toFixed(3),
+            },
+            "Swapping trade for higher-confidence opportunity"
+          );
+          await closeTrade(weakestTrade, "swapped");
+          const swapCoin = COINS.find((c) => c.symbol === bestSwap.symbol)!;
+          const swapStrategies = bestSwap.votes.filter((v) => v.vote === "buy").map((v) => v.strategyId);
+          await openTrade(bestSwap.symbol, swapCoin.krakenPair, bestSwap.name, bestSwap.price, swapStrategies, bestSwap.confidence);
+        }
+      }
+    }
   } catch (err) {
     logger.error({ err }, "Scan error");
   }
