@@ -223,7 +223,7 @@ async function scan(): Promise<void> {
 
     // Swap logic: if all trade slots are full, check whether any idle coin now has
     // significantly higher vote confidence than the weakest current trade.
-    const SWAP_MIN_ADVANTAGE = 0.20; // new signal must beat current trade by ≥20%
+    const SWAP_MIN_ADVANTAGE = 0.05; // new signal must beat current trade by ≥5%
     const currentOpen = store.getOpenTrades();
     if (currentOpen.length >= store.settings.maxConcurrentTrades) {
       const activeSymbols = new Set(currentOpen.map((t) => t.symbol));
