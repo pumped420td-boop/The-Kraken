@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "savedAt": "2026-06-03T09:54:54.903Z",
+  "learningCycles": 52,
+  "strategyStats": [
+    {
+      "id": "rsi",
+      "weight": 1.9500000000000002,
+      "totalSignals": 16,
+      "successfulSignals": 12,
+      "profitContribution": 6.808774490848761
+    },
+    {
+      "id": "macd",
+      "weight": 1.4000000000000001,
+      "totalSignals": 4,
+      "successfulSignals": 2,
+      "profitContribution": 1.409383855887894
+    },
+    {
+      "id": "bollinger",
+      "weight": 2.0285714285714285,
+      "totalSignals": 14,
+      "successfulSignals": 11,
+      "profitContribution": 6.39112617215095
+    },
+    {
+      "id": "ema",
+      "weight": 1.4000000000000001,
+      "totalSignals": 1,
+      "successfulSignals": 0,
+      "profitContribution": 0
+    },
+    {
+      "id": "vwap",
+      "weight": 1.9500000000000002,
+      "totalSignals": 16,
+      "successfulSignals": 12,
+      "profitContribution": 6.808774490848761
+    },
+    {
+      "id": "momentum",
+      "weight": 1.4000000000000001,
+      "totalSignals": 1,
+      "successfulSignals": 0,
+      "profitContribution": 0
+    },
+    {
+      "id": "ml",
+      "weight": 1,
+      "totalSignals": 0,
+      "successfulSignals": 0,
+      "profitContribution": 0
+    }
+  ],
+  "patternHistory": {
+    "APT:UDDUUDD": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.3994190268700186
+    },
+    "INJ:UDDDDDU": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 2.042431918936036
+    },
+    "SEI:DDDDUDD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -0.9988722410182233
+    },
+    "ARB:DUUDDDU": {
+      "wins": 1,
+      "losses": 1,
+      "totalProfit": 0.33407572383074163
+    },
+    "SAND:DUUFFDU": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.9917355371900827
+    },
+    "SEI:DDDUDDD": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.5480335267569256
+    },
+    "SOL:DUUDDDU": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.23129251700678993
+    },
+    "ALGO:DUDDDDU": {
+      "wins": 2,
+      "losses": 1,
+      "totalProfit": 0.9558214782436082
+    },
+    "SEI:DDDUDDU": {
+      "wins": 2,
+      "losses": 0,
+      "totalProfit": 0.6274080162009859
+    },
+    "ETH:DUDDDUU": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.24294220361592522
+    },
+    "SAND:UUFFDUF": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": 0
+    },
+    "NEIRO:DFUUDDD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -0.16969064090850225
+    },
+    "ETH:DUUDUUD": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.41764831869781116
+    }
+  }
+}
