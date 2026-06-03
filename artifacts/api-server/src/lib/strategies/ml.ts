@@ -15,7 +15,15 @@ interface PatternRecord {
   totalProfit: number;
 }
 
-const patternHistory: Record<string, PatternRecord> = {};
+let patternHistory: Record<string, PatternRecord> = {};
+
+export function getPatternHistory(): Record<string, PatternRecord> {
+  return patternHistory;
+}
+
+export function setPatternHistory(data: Record<string, PatternRecord>): void {
+  patternHistory = data;
+}
 
 export function recordPatternOutcome(symbol: string, pattern: string, success: boolean, profitPct: number): void {
   const key = `${symbol}:${pattern}`;
