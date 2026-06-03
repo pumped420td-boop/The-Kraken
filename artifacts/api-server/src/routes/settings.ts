@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { store } from "../lib/store.js";
+import { saveMlState } from "../lib/persistence.js";
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.put("/settings", (req, res) => {
   if (body.trailingStop !== undefined) store.settings.trailingStop = Math.max(0.5, Math.min(10, Number(body.trailingStop)));
   if (body.maxConcurrentTrades !== undefined) store.settings.maxConcurrentTrades = Math.max(1, Math.min(5, Number(body.maxConcurrentTrades)));
   if (body.voteThreshold !== undefined) store.settings.voteThreshold = Math.max(1, Math.min(7, Number(body.voteThreshold)));
+  saveMlState();
   res.json(store.settings);
 });
 

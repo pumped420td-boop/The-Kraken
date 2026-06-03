@@ -1,12 +1,13 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { store } from "./store.js";
+import type { StoredTrade, StoredSettings } from "./store.js";
 import { getPatternHistory, setPatternHistory } from "./strategies/ml.js";
 import { logger } from "./logger.js";
 
 const DATA_DIR = join(process.cwd(), "data");
-const STATE_FILE = join(DATA_DIR, "ml-state.json");
-const STATE_VERSION = 1;
+const STATE_FILE = join(DATA_DIR, "bot-state.json");
+const STATE_VERSION = 2;
 
 interface PersistedStratStat {
   id: string;
@@ -16,9 +17,14 @@ interface PersistedStratStat {
   profitContribution: number;
 }
 
-interface MlState {
+interface BotState {
   version: number;
   savedAt: string;
+  // Paper trading
+  paperBalance: number;
+  trades: StoredTrade[];
+  settings: StoredSettings;
+  // ML learning
   learningCycles: number;
   strategyStats: PersistedStratStat[];
   patternHistory: Record<string, { wins: number; losses: number; totalProfit: number }>;
@@ -27,9 +33,13 @@ interface MlState {
 export function saveMlState(): void {
   try {
     if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
-    const state: MlState = {
+    const state: BotState = {
       version: STATE_VERSION,
       savedAt: new Date().toISOString(),
+      paperBalance: store.paperBalance,
+      // Only persist closed trades — open trades will be re-evaluated on restart
+      trades: store.trades.filter((t) => t.status !== "open"),
+      settings: { ...store.settings },
       learningCycles: store.learningCycles,
       strategyStats: store.strategyStats.map((s) => ({
         id: s.id,
@@ -42,24 +52,32 @@ export function saveMlState(): void {
     };
     writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8");
   } catch (err) {
-    logger.warn({ err }, "Failed to save ML state");
+    logger.warn({ err }, "Failed to save bot state");
   }
 }
 
 export function loadMlState(): void {
-  try {
-    if (!existsSync(STATE_FILE)) {
-      logger.info("No saved ML state found — starting fresh");
-      return;
-    }
-    const raw = readFileSync(STATE_FILE, "utf8");
-    const state = JSON.parse(raw) as MlState;
-    if (state.version !== STATE_VERSION) {
-      logger.warn({ version: state.version }, "ML state version mismatch — skipping load");
-      return;
-    }
+  // Also try legacy filename from v1
+  const legacyFile = join(DATA_DIR, "ml-state.json");
 
-    for (const saved of state.strategyStats) {
+  let raw: string | null = null;
+  if (existsSync(STATE_FILE)) {
+    raw = readFileSync(STATE_FILE, "utf8");
+  } else if (existsSync(legacyFile)) {
+    raw = readFileSync(legacyFile, "utf8");
+    logger.info("Loading from legacy ml-state.json");
+  }
+
+  if (!raw) {
+    logger.info("No saved bot state found — starting fresh");
+    return;
+  }
+
+  try {
+    const state = JSON.parse(raw) as BotState;
+
+    // --- ML weights (both v1 and v2) ---
+    for (const saved of state.strategyStats ?? []) {
       const stat = store.strategyStats.find((s) => s.id === saved.id);
       if (stat) {
         stat.weight = saved.weight;
@@ -68,15 +86,39 @@ export function loadMlState(): void {
         stat.profitContribution = saved.profitContribution;
       }
     }
-    store.learningCycles = state.learningCycles;
-    setPatternHistory(state.patternHistory);
+    store.learningCycles = state.learningCycles ?? 0;
+    if (state.patternHistory) setPatternHistory(state.patternHistory);
 
-    const patternCount = Object.keys(state.patternHistory).length;
+    // --- Balance, trades, settings (v2 only) ---
+    if (state.version >= 2) {
+      if (typeof state.paperBalance === "number") {
+        store.paperBalance = state.paperBalance;
+      }
+      if (Array.isArray(state.trades)) {
+        store.trades = state.trades;
+      }
+      if (state.settings) {
+        // Restore everything except live mode — always start in paper for safety
+        store.settings = {
+          ...store.settings,
+          ...state.settings,
+          mode: "paper", // never auto-restore live mode; user must re-enable
+        };
+      }
+    }
+
+    const patternCount = Object.keys(state.patternHistory ?? {}).length;
     logger.info(
-      { cycles: state.learningCycles, patterns: patternCount, savedAt: state.savedAt },
-      "ML state restored"
+      {
+        cycles: store.learningCycles,
+        patterns: patternCount,
+        paperBalance: store.paperBalance,
+        tradeHistory: store.trades.length,
+        savedAt: state.savedAt,
+      },
+      "Bot state restored"
     );
   } catch (err) {
-    logger.warn({ err }, "Failed to load ML state — starting fresh");
+    logger.warn({ err }, "Failed to load bot state — starting fresh");
   }
 }

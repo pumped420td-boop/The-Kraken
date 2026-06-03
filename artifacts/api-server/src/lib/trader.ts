@@ -3,6 +3,7 @@ import { COINS } from "./coins.js";
 import { analyzeCoins, countBuyVotes } from "./voting.js";
 import { updateTickerCache, fetchUsdBalance, placeMarketBuy, placeMarketSell } from "./kraken.js";
 import { encodePattern, recordPatternOutcome } from "./strategies/ml.js";
+import { saveMlState } from "./persistence.js";
 import { logger } from "./logger.js";
 import type { StoredTrade } from "./store.js";
 
@@ -121,6 +122,9 @@ export async function closeTrade(trade: StoredTrade, reason: "profit" | "stop" |
     { symbol: trade.symbol, profitPercent: profitPercent.toFixed(2), reason, mode: store.settings.mode },
     "Trade closed"
   );
+
+  // Persist immediately so balance/ML data survive a crash between 5-min saves
+  saveMlState();
 }
 
 async function updateActiveTrades(): Promise<void> {
