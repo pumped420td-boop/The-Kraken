@@ -38,8 +38,9 @@ export function saveMlState(): void {
       version: STATE_VERSION,
       savedAt: new Date().toISOString(),
       paperBalance: store.paperBalance,
-      // Only persist closed trades — open trades will be re-evaluated on restart
-      trades: store.trades.filter((t) => t.status !== "open"),
+      // Persist ALL trades (open + closed). Open trades are restored on restart
+      // so their investedUsd stays accounted for in paperBalance correctly.
+      trades: store.trades,
       settings: { ...store.settings },
       learningCycles: store.learningCycles,
       strategyStats: store.strategyStats.map((s) => ({

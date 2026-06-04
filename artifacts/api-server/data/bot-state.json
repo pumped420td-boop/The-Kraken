@@ -1,8 +1,113 @@
 {
   "version": 2,
-  "savedAt": "2026-06-04T00:19:10.708Z",
-  "paperBalance": 100,
-  "trades": [],
+  "savedAt": "2026-06-04T10:20:23.142Z",
+  "paperBalance": 100.74,
+  "trades": [
+    {
+      "id": "mpyrbmdjjk7o3",
+      "symbol": "BTC",
+      "krakenPair": "XXBTZUSD",
+      "name": "Bitcoin",
+      "entryPrice": 63631.2,
+      "currentPrice": 62351.1,
+      "quantity": 0.0003928890229950088,
+      "investedUsd": 25,
+      "profitPercent": -2.011748953343627,
+      "profitUsd": -0.5029372383359068,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T00:28:30.343Z",
+      "closedAt": "2026-06-04T02:08:01.930Z",
+      "paperMode": true,
+      "highestPrice": 63685.4,
+      "trailingActive": false,
+      "entryConfidence": 0.35667437697001303,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mpyrbmdj6go8b",
+      "symbol": "ADA",
+      "krakenPair": "ADAUSD",
+      "name": "Cardano",
+      "entryPrice": 0.198414,
+      "currentPrice": 0.198078,
+      "quantity": 125.99917344542219,
+      "investedUsd": 25,
+      "profitPercent": -0.1693428891106521,
+      "profitUsd": -0.042335722277663024,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T00:28:30.343Z",
+      "closedAt": "2026-06-04T01:03:01.788Z",
+      "paperMode": true,
+      "highestPrice": 0.198856,
+      "trailingActive": false,
+      "entryConfidence": 0.33430350389648084,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mpyuvm2zlwf8r",
+      "symbol": "APT",
+      "krakenPair": "APTUSD",
+      "name": "Aptos",
+      "entryPrice": 0.7572,
+      "currentPrice": 0.7817,
+      "quantity": 32.68427282201804,
+      "investedUsd": 24.748531380832056,
+      "profitPercent": 3.2356048600105622,
+      "profitUsd": 0.8007646841394411,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T02:08:01.931Z",
+      "closedAt": "2026-06-04T03:05:02.945Z",
+      "paperMode": true,
+      "highestPrice": 0.7817,
+      "trailingActive": false,
+      "entryConfidence": 0.46951219512195125,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mpywwxr62as4n",
+      "symbol": "MANA",
+      "krakenPair": "MANAUSD",
+      "name": "Decentraland",
+      "entryPrice": 0.07426,
+      "currentPrice": 0.07569,
+      "quantity": 338.6602979114162,
+      "investedUsd": 25.148913722901767,
+      "profitPercent": 1.9256665768919903,
+      "profitUsd": 0.48428422601332244,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T03:05:02.946Z",
+      "closedAt": "2026-06-04T03:46:02.254Z",
+      "paperMode": true,
+      "highestPrice": 0.07569,
+      "trailingActive": false,
+      "entryConfidence": 0.4518872681183099,
+      "closeReason": "swapped"
+    }
+  ],
   "settings": {
     "allocation": 50,
     "mode": "paper",
@@ -11,14 +116,14 @@
     "maxConcurrentTrades": 2,
     "voteThreshold": 4
   },
-  "learningCycles": 0,
+  "learningCycles": 12,
   "strategyStats": [
     {
       "id": "rsi",
-      "weight": 1,
-      "totalSignals": 0,
-      "successfulSignals": 0,
-      "profitContribution": 0
+      "weight": 1.4000000000000001,
+      "totalSignals": 4,
+      "successfulSignals": 2,
+      "profitContribution": 5.1612714369025525
     },
     {
       "id": "macd",
@@ -29,10 +134,10 @@
     },
     {
       "id": "bollinger",
-      "weight": 1,
-      "totalSignals": 0,
-      "successfulSignals": 0,
-      "profitContribution": 0
+      "weight": 1.4000000000000001,
+      "totalSignals": 4,
+      "successfulSignals": 2,
+      "profitContribution": 5.1612714369025525
     },
     {
       "id": "ema",
@@ -43,10 +148,10 @@
     },
     {
       "id": "vwap",
-      "weight": 1,
-      "totalSignals": 0,
-      "successfulSignals": 0,
-      "profitContribution": 0
+      "weight": 1.4000000000000001,
+      "totalSignals": 4,
+      "successfulSignals": 2,
+      "profitContribution": 5.1612714369025525
     },
     {
       "id": "momentum",
@@ -63,5 +168,26 @@
       "profitContribution": 0
     }
   ],
-  "patternHistory": {}
+  "patternHistory": {
+    "DDDUDDD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -0.1693428891106521
+    },
+    "DUDDDDD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -2.011748953343627
+    },
+    "UDDDDUD": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 3.2356048600105622
+    },
+    "UDDDDUU": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 1.9256665768919903
+    }
+  }
 }
