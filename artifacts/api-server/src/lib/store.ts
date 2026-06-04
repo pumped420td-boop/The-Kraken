@@ -74,7 +74,7 @@ class Store {
   };
 
   trades: StoredTrade[] = [];
-  paperBalance = 10000;
+  paperBalance = 100;
   liveBalance = 0;
 
   strategyStats: StrategyStats[] = [
