@@ -5,7 +5,8 @@ import type { StoredTrade, StoredSettings } from "./store.js";
 import { getPatternHistory, setPatternHistory } from "./strategies/ml.js";
 import { logger } from "./logger.js";
 
-const DATA_DIR = join(process.cwd(), "data");
+// DATA_DIR can be overridden by env var — set DATA_DIR=/data on Render when using a persistent disk
+const DATA_DIR = process.env["DATA_DIR"] ?? join(process.cwd(), "data");
 const STATE_FILE = join(DATA_DIR, "bot-state.json");
 const STATE_VERSION = 2;
 

@@ -1,6 +1,6 @@
 import { store } from "./store.js";
 import { COINS } from "./coins.js";
-import { analyzeCoins, countBuyVotes } from "./voting.js";
+import { analyzeCoins } from "./voting.js";
 import { updateTickerCache, fetchUsdBalance, placeMarketBuy, placeMarketSell } from "./kraken.js";
 import { encodePattern, recordPatternOutcome } from "./strategies/ml.js";
 import { saveMlState } from "./persistence.js";
@@ -206,12 +206,13 @@ async function scan(): Promise<void> {
     const openTrades = store.getOpenTrades();
     if (openTrades.length < store.settings.maxConcurrentTrades) {
       const activeSymbols = new Set(openTrades.map((t) => t.symbol));
+      // Trust the weighted voting engine's decision — no secondary raw-count gate.
+      // voteThreshold is now a minimum confidence % (scaled: threshold/7) so the
+      // setting still gives users control without blocking every weighted buy signal.
+      const minConfidence = store.settings.voteThreshold / 14; // 4/14 ≈ 0.29 default
       const buySignals = allVoteResults
         .filter((r) => !activeSymbols.has(r.symbol))
-        .filter((r) => {
-          const buyVotes = countBuyVotes(r.votes);
-          return r.decision === "buy" && buyVotes >= store.settings.voteThreshold;
-        })
+        .filter((r) => r.decision === "buy" && r.confidence >= minConfidence)
         .sort((a, b) => b.confidence - a.confidence);
 
       for (const signal of buySignals) {
@@ -243,7 +244,7 @@ async function scan(): Promise<void> {
         // Best new buy signal not in an active trade
         const bestSwap = allVoteResults
           .filter((r) => !activeSymbols.has(r.symbol))
-          .filter((r) => r.decision === "buy" && countBuyVotes(r.votes) >= store.settings.voteThreshold)
+          .filter((r) => r.decision === "buy" && r.confidence >= store.settings.voteThreshold / 14)
           .sort((a, b) => b.confidence - a.confidence)[0];
 
         if (bestSwap && bestSwap.confidence >= weakestVote.confidence + SWAP_MIN_ADVANTAGE) {
