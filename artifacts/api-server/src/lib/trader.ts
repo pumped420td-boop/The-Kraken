@@ -104,13 +104,15 @@ export async function closeTrade(trade: StoredTrade, reason: "profit" | "stop" |
     store.paperBalance += exitValue;
   }
 
-  // Feed results into ML learning
+  // Feed results into ML learning — keyed by strategy-combo + candle pattern
   const candles = store.ohlcCache[trade.krakenPair]?.candles ?? [];
   if (candles.length >= 10) {
     const closes = candles.map((c) => c.close);
     const pattern = encodePattern(closes);
     const success = profitPercent > 0;
-    recordPatternOutcome(trade.symbol, pattern, success, profitPercent);
+    // Use the strategies that voted buy when the trade was opened as the combo key
+    const strategyCombo = [...trade.winningStrategies].sort().join("|");
+    recordPatternOutcome(strategyCombo, pattern, success, profitPercent);
   }
 
   // Update strategy weights based on which strategies voted for this trade

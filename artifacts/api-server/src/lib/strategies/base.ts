@@ -13,6 +13,8 @@ export interface StrategyInput {
   symbol: string;
   candles: OHLCCandle[];
   currentPrice: number;
+  /** IDs of non-ML strategies currently voting "buy" — passed to ML for combo learning */
+  otherVotes?: string[];
 }
 
 export interface Strategy {

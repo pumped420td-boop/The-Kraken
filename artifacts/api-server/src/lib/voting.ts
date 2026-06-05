@@ -10,14 +10,14 @@ import { mlStrategy } from "./strategies/ml.js";
 import type { StrategySignal } from "./strategies/base.js";
 import type { Coin } from "./coins.js";
 
-const ALL_STRATEGIES = [
+// Non-ML strategies run first so their votes can be passed to ML as context
+const BASE_STRATEGIES = [
   rsiStrategy,
   macdStrategy,
   bollingerStrategy,
   emaStrategy,
   vwapStrategy,
   momentumStrategy,
-  mlStrategy,
 ];
 
 export interface VoteResult {
@@ -61,7 +61,9 @@ export async function analyzeCoins(coins: Coin[]): Promise<VoteResult[]> {
     let holdScore = 0;
     let totalWeight = 0;
 
-    for (const strategy of ALL_STRATEGIES) {
+    // Run base strategies first so we know which ones vote "buy" before calling ML
+    const buyVoterIds: string[] = [];
+    for (const strategy of BASE_STRATEGIES) {
       const stat = store.strategyStats.find((s) => s.id === strategy.id);
       const weight = stat?.weight ?? 1.0;
 
@@ -72,15 +74,37 @@ export async function analyzeCoins(coins: Coin[]): Promise<VoteResult[]> {
         signal = { strategyId: strategy.id, strategyName: strategy.name, vote: "hold", confidence: 0.1 };
       }
 
-      const weightedConfidence = signal.confidence * weight;
-      if (signal.vote === "buy") buyScore += weightedConfidence;
-      else if (signal.vote === "sell") sellScore += weightedConfidence;
-      else holdScore += weightedConfidence;
+      if (signal.vote === "buy") {
+        buyScore += signal.confidence * weight;
+        buyVoterIds.push(strategy.id);
+      } else if (signal.vote === "sell") {
+        sellScore += signal.confidence * weight;
+      } else {
+        holdScore += signal.confidence * weight;
+      }
 
       totalWeight += weight;
       votes.push({ ...signal, weight });
+      if (stat) stat.currentSignal = signal.vote;
+    }
 
-      // Update current signal in store
+    // Run ML last — pass buy voter IDs so it can use combo + pattern learning
+    {
+      const stat = store.strategyStats.find((s) => s.id === mlStrategy.id);
+      const weight = stat?.weight ?? 1.0;
+      let signal: StrategySignal;
+      try {
+        signal = mlStrategy.analyze({ symbol: coin.symbol, candles, currentPrice: price, otherVotes: buyVoterIds });
+      } catch {
+        signal = { strategyId: mlStrategy.id, strategyName: mlStrategy.name, vote: "hold", confidence: 0.1 };
+      }
+
+      if (signal.vote === "buy") buyScore += signal.confidence * weight;
+      else if (signal.vote === "sell") sellScore += signal.confidence * weight;
+      else holdScore += signal.confidence * weight;
+
+      totalWeight += weight;
+      votes.push({ ...signal, weight });
       if (stat) stat.currentSignal = signal.vote;
     }
 

@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "savedAt": "2026-06-04T10:20:23.142Z",
-  "paperBalance": 100.74,
+  "savedAt": "2026-06-05T00:06:50.944Z",
+  "paperBalance": 100.39124433254649,
   "trades": [
     {
       "id": "mpyrbmdjjk7o3",
@@ -106,38 +106,351 @@
       "trailingActive": false,
       "entryConfidence": 0.4518872681183099,
       "closeReason": "swapped"
+    },
+    {
+      "id": "mpzcjjqsnw2ob",
+      "symbol": "NEAR",
+      "krakenPair": "NEARUSD",
+      "name": "NEAR Protocol",
+      "entryPrice": 2.3711,
+      "currentPrice": 2.3878,
+      "quantity": 10.621652397621355,
+      "investedUsd": 25.185,
+      "profitPercent": 0.7043144532073596,
+      "profitUsd": 0.1773815950402735,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T10:22:32.117Z",
+      "closedAt": "2026-06-04T10:42:45.748Z",
+      "paperMode": true,
+      "highestPrice": 2.3907,
+      "trailingActive": false,
+      "entryConfidence": 0.40975609756097564,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mpzcjjqt75sot",
+      "symbol": "OP",
+      "krakenPair": "OPUSD",
+      "name": "Optimism",
+      "entryPrice": 0.106,
+      "currentPrice": 0.1058,
+      "quantity": 237.5943396226415,
+      "investedUsd": 25.185,
+      "profitPercent": -0.18867924528301405,
+      "profitUsd": -0.047518867924527086,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T10:22:32.117Z",
+      "closedAt": "2026-06-04T10:46:49.221Z",
+      "paperMode": true,
+      "highestPrice": 0.1064,
+      "trailingActive": false,
+      "entryConfidence": 0.40975609756097564,
+      "closeReason": "manual"
+    },
+    {
+      "id": "mpzd9k6tz6mj2",
+      "symbol": "FET",
+      "krakenPair": "FETUSD",
+      "name": "Fetch.ai",
+      "entryPrice": 0.2247,
+      "currentPrice": 0.2251,
+      "quantity": 112.47748463515856,
+      "investedUsd": 25.27369079752013,
+      "profitPercent": 0.17801513128616256,
+      "profitUsd": 0.04499099385406424,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T10:42:45.749Z",
+      "closedAt": "2026-06-04T10:46:51.012Z",
+      "paperMode": true,
+      "highestPrice": 0.2251,
+      "trailingActive": false,
+      "entryConfidence": 0.4439024390243902,
+      "closeReason": "manual"
+    },
+    {
+      "id": "mpzy5yzh5udyh",
+      "symbol": "INJ",
+      "krakenPair": "INJUSD",
+      "name": "Injective",
+      "entryPrice": 5.45,
+      "currentPrice": 5.447,
+      "quantity": 4.629121730319715,
+      "investedUsd": 25.22871343024245,
+      "profitPercent": -0.05504587155963865,
+      "profitUsd": -0.013887365190960566,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T20:27:50.237Z",
+      "closedAt": "2026-06-04T23:04:52.609Z",
+      "paperMode": true,
+      "highestPrice": 5.49,
+      "trailingActive": false,
+      "entryConfidence": 0.43097199341021425,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mpzy5yzhtrkfd",
+      "symbol": "ADA",
+      "krakenPair": "ADAUSD",
+      "name": "Cardano",
+      "entryPrice": 0.184751,
+      "currentPrice": 0.181237,
+      "quantity": 136.5552198918677,
+      "investedUsd": 25.22871343024245,
+      "profitPercent": -1.9020194748607606,
+      "profitUsd": -0.47985504270002366,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T20:27:50.237Z",
+      "closedAt": "2026-06-04T22:09:23.566Z",
+      "paperMode": true,
+      "highestPrice": 0.185977,
+      "trailingActive": false,
+      "entryConfidence": 0.41487948695430005,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mq01skmnal16r",
+      "symbol": "TON",
+      "krakenPair": "TONUSD",
+      "name": "Toncoin",
+      "entryPrice": 1.644,
+      "currentPrice": 1.663,
+      "quantity": 15.19999142876669,
+      "investedUsd": 24.98878590889244,
+      "profitPercent": 1.1557177615571745,
+      "profitUsd": 0.2887998371465663,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T22:09:23.567Z",
+      "closedAt": "2026-06-04T22:46:22.520Z",
+      "paperMode": true,
+      "highestPrice": 1.663,
+      "trailingActive": false,
+      "entryConfidence": 0.4546623254934057,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mq0344s9kpymp",
+      "symbol": "SEI",
+      "krakenPair": "SEIUSD",
+      "name": "Sei",
+      "entryPrice": 0.05199,
+      "currentPrice": 0.0522,
+      "quantity": 483.4234627325586,
+      "investedUsd": 25.133185827465724,
+      "profitPercent": 0.403923831506064,
+      "profitUsd": 0.10151892717383859,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "macd",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T22:46:22.521Z",
+      "closedAt": "2026-06-04T22:49:22.555Z",
+      "paperMode": true,
+      "highestPrice": 0.0522,
+      "trailingActive": false,
+      "entryConfidence": 0.4086897765181427,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mq037zp8cgpoe",
+      "symbol": "ADA",
+      "krakenPair": "ADAUSD",
+      "name": "Cardano",
+      "entryPrice": 0.180849,
+      "currentPrice": 0.182069,
+      "quantity": 139.25399250785264,
+      "investedUsd": 25.183945291052645,
+      "profitPercent": 0.6745959336241738,
+      "profitUsd": 0.16988987085957774,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T22:49:22.556Z",
+      "closedAt": "2026-06-04T23:12:52.792Z",
+      "paperMode": true,
+      "highestPrice": 0.18301,
+      "trailingActive": false,
+      "entryConfidence": 0.42098548034323446,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mq03rxc274ox7",
+      "symbol": "NEAR",
+      "krakenPair": "NEARUSD",
+      "name": "NEAR Protocol",
+      "entryPrice": 2.2339,
+      "currentPrice": 2.1975,
+      "quantity": 11.290464992903427,
+      "investedUsd": 25.221769747646967,
+      "profitPercent": -1.6294373069519832,
+      "profitUsd": -0.41097292574168875,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T23:04:52.610Z",
+      "closedAt": "2026-06-04T23:58:54.026Z",
+      "paperMode": true,
+      "highestPrice": 2.2339,
+      "trailingActive": false,
+      "entryConfidence": 0.3498920086393088,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mq0427uhs3xow",
+      "symbol": "INJ",
+      "krakenPair": "INJUSD",
+      "name": "Injective",
+      "entryPrice": 5.44,
+      "currentPrice": 5.44,
+      "quantity": 4.645016585750447,
+      "investedUsd": 25.268890226482434,
+      "profitPercent": 0,
+      "profitUsd": 0,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T23:12:52.793Z",
+      "closedAt": "2026-06-04T23:51:52.728Z",
+      "paperMode": true,
+      "highestPrice": 5.44,
+      "trailingActive": false,
+      "entryConfidence": 0.3792134831460674,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mq05gdcpb2wyg",
+      "symbol": "ADA",
+      "krakenPair": "ADAUSD",
+      "name": "Cardano",
+      "entryPrice": 0.179409,
+      "currentPrice": 0.179058,
+      "quantity": 140.84516510588895,
+      "investedUsd": 25.268890226482434,
+      "profitPercent": -0.19564235907899005,
+      "profitUsd": -0.04943665295217059,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T23:51:52.729Z",
+      "closedAt": "2026-06-05T00:04:40.452Z",
+      "paperMode": true,
+      "highestPrice": 0.180102,
+      "trailingActive": false,
+      "entryConfidence": 0.3876197791960274,
+      "closeReason": "manual"
+    },
+    {
+      "id": "mq05pefe56m3w",
+      "symbol": "INJ",
+      "krakenPair": "INJUSD",
+      "name": "Injective",
+      "entryPrice": 5.402,
+      "currentPrice": 5.374,
+      "quantity": 4.630929893516499,
+      "investedUsd": 25.01628328477613,
+      "profitPercent": -0.5183265457238111,
+      "profitUsd": -0.12966603701846324,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap"
+      ],
+      "openedAt": "2026-06-04T23:58:54.026Z",
+      "closedAt": "2026-06-05T00:04:41.914Z",
+      "paperMode": true,
+      "highestPrice": 5.402,
+      "trailingActive": false,
+      "entryConfidence": 0.4024326672458731,
+      "closeReason": "manual"
     }
   ],
   "settings": {
     "allocation": 50,
     "mode": "paper",
-    "profitTarget": 5,
-    "trailingStop": 2,
+    "profitTarget": 3,
+    "trailingStop": 1,
     "maxConcurrentTrades": 2,
-    "voteThreshold": 4
+    "voteThreshold": 3
   },
-  "learningCycles": 12,
+  "learningCycles": 49,
   "strategyStats": [
     {
       "id": "rsi",
-      "weight": 1.4000000000000001,
-      "totalSignals": 4,
-      "successfulSignals": 2,
-      "profitContribution": 5.1612714369025525
+      "weight": 1.2625000000000002,
+      "totalSignals": 16,
+      "successfulSignals": 7,
+      "profitContribution": 8.277838548083487
     },
     {
       "id": "macd",
-      "weight": 1,
-      "totalSignals": 0,
-      "successfulSignals": 0,
-      "profitContribution": 0
+      "weight": 1.4000000000000001,
+      "totalSignals": 1,
+      "successfulSignals": 1,
+      "profitContribution": 0.403923831506064
     },
     {
       "id": "bollinger",
-      "weight": 1.4000000000000001,
-      "totalSignals": 4,
-      "successfulSignals": 2,
-      "profitContribution": 5.1612714369025525
+      "weight": 1.2625000000000002,
+      "totalSignals": 16,
+      "successfulSignals": 7,
+      "profitContribution": 8.277838548083487
     },
     {
       "id": "ema",
@@ -148,10 +461,10 @@
     },
     {
       "id": "vwap",
-      "weight": 1.4000000000000001,
-      "totalSignals": 4,
-      "successfulSignals": 2,
-      "profitContribution": 5.1612714369025525
+      "weight": 1.2625000000000002,
+      "totalSignals": 16,
+      "successfulSignals": 7,
+      "profitContribution": 8.277838548083487
     },
     {
       "id": "momentum",
@@ -188,6 +501,46 @@
       "wins": 1,
       "losses": 0,
       "totalProfit": 1.9256665768919903
+    },
+    "DDDDDUU": {
+      "wins": 1,
+      "losses": 2,
+      "totalProfit": 0.6492685816477209
+    },
+    "DDDDDDU": {
+      "wins": 1,
+      "losses": 1,
+      "totalProfit": 0.9670385162741605
+    },
+    "DDDDUDD": {
+      "wins": 1,
+      "losses": 1,
+      "totalProfit": -0.34031141443764856
+    },
+    "DUUDDDU": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -1.9020194748607606
+    },
+    "DUDDDDU": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.403923831506064
+    },
+    "UUDDDUU": {
+      "wins": 1,
+      "losses": 0,
+      "totalProfit": 0.6745959336241738
+    },
+    "DDDDDDD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -1.6294373069519832
+    },
+    "UDDDUDD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -0.19564235907899005
     }
   }
 }

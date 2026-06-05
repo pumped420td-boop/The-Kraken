@@ -25,10 +25,13 @@ export function setPatternHistory(data: Record<string, PatternRecord>): void {
   patternHistory = data;
 }
 
-export function recordPatternOutcome(_symbol: string, pattern: string, success: boolean, profitPct: number): void {
-  // Key on just the candle pattern (not symbol) so all 40 coins share learning data.
-  // A coin appearing in a UUDDUD shape carries the same signal regardless of which coin it is.
-  const key = pattern;
+/**
+ * Record a trade outcome keyed by strategy-combo + candle pattern.
+ * strategyCombo: sorted pipe-joined IDs of strategies that voted buy (e.g. "ema|rsi").
+ * This lets ML learn "when RSI + EMA agree AND pattern is UUDDUD → what usually happens?"
+ */
+export function recordPatternOutcome(strategyCombo: string, pattern: string, success: boolean, profitPct: number): void {
+  const key = strategyCombo ? `${strategyCombo}:${pattern}` : pattern;
   if (!patternHistory[key]) patternHistory[key] = { wins: 0, losses: 0, totalProfit: 0 };
   if (success) patternHistory[key].wins++;
   else patternHistory[key].losses++;
@@ -45,15 +48,21 @@ export const mlStrategy: Strategy = {
     }
 
     const pattern = encodePattern(closes);
-    // Global key — all 40 coins share pattern knowledge so data accumulates fast
-    const record = patternHistory[pattern];
+    const buyers = input.otherVotes ?? [];
+    const sortedCombo = [...buyers].sort().join("|");
+
+    // Look up the strategy-combo + pattern combination first (most specific),
+    // then fall back to the bare pattern if no combo data exists yet.
+    const comboKey = sortedCombo ? `${sortedCombo}:${pattern}` : pattern;
+    const record = patternHistory[comboKey] ?? patternHistory[pattern];
 
     if (!record || record.wins + record.losses < 2) {
-      // Not enough data yet — active fallback using recent price trend
-      const recentCloses = closes.slice(-5);
-      const upCount = recentCloses.filter((v, i) => i > 0 && v > recentCloses[i - 1]).length;
-      if (upCount >= 3) return { strategyId: "ml", strategyName: "ML Pattern", vote: "buy", confidence: 0.45 };
-      if (upCount <= 1) return { strategyId: "ml", strategyName: "ML Pattern", vote: "sell", confidence: 0.40 };
+      // Not enough learned data — defer to consensus of the other strategies.
+      // This avoids being stuck on "sell" just because candles are trending down.
+      const buyCount = buyers.length;
+      if (buyCount >= 4) return { strategyId: "ml", strategyName: "ML Pattern", vote: "buy", confidence: 0.50 };
+      if (buyCount === 3) return { strategyId: "ml", strategyName: "ML Pattern", vote: "buy", confidence: 0.42 };
+      if (buyCount <= 1) return { strategyId: "ml", strategyName: "ML Pattern", vote: "sell", confidence: 0.35 };
       return { strategyId: "ml", strategyName: "ML Pattern", vote: "hold", confidence: 0.25 };
     }
 
@@ -61,7 +70,7 @@ export const mlStrategy: Strategy = {
     const winRate = record.wins / total;
     const avgProfit = record.totalProfit / total;
 
-    // Confidence scales with sample size (more data = more conviction)
+    // Confidence scales with sample size
     const experienceBoost = Math.min(0.25, total * 0.02);
 
     if (winRate > 0.6 && avgProfit > 1) {
