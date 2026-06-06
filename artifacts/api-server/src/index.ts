@@ -1,10 +1,10 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { refreshVotesCache, startVotesCacheTimer } from "./lib/trader";
+import { refreshVotesCache, startVotesCacheTimer, startBot } from "./lib/trader";
 import { loadMlState, saveMlState } from "./lib/persistence";
 
-// Restore learned weights and pattern history before serving any requests
-loadMlState();
+// Restore learned weights, balance, trades, settings — returns true if bot was running
+const shouldAutoStart = loadMlState();
 
 const rawPort = process.env["PORT"];
 
@@ -28,11 +28,17 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
 
-  // After market cache warms up (~3s), do first votes computation then start background timer
+  // After market cache warms up (~3s), do first votes computation then start background timer.
+  // Also auto-resume the bot if it was running when the server last shut down (paper mode only).
   setTimeout(async () => {
     await refreshVotesCache();
     startVotesCacheTimer();
     logger.info("Votes cache initialized");
+
+    if (shouldAutoStart) {
+      await startBot();
+      logger.info("Bot auto-resumed from saved state");
+    }
   }, 4_000);
 
   // Persist ML state every 5 minutes so learned weights survive restarts

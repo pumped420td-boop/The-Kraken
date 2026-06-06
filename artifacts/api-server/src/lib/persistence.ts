@@ -25,6 +25,8 @@ interface BotState {
   paperBalance: number;
   trades: StoredTrade[];
   settings: StoredSettings;
+  // Bot state
+  botRunning?: boolean;
   // ML learning
   learningCycles: number;
   strategyStats: PersistedStratStat[];
@@ -42,6 +44,7 @@ export function saveMlState(): void {
       // so their investedUsd stays accounted for in paperBalance correctly.
       trades: store.trades,
       settings: { ...store.settings },
+      botRunning: store.running,
       learningCycles: store.learningCycles,
       strategyStats: store.strategyStats.map((s) => ({
         id: s.id,
@@ -58,7 +61,8 @@ export function saveMlState(): void {
   }
 }
 
-export function loadMlState(): void {
+/** Returns true if the bot was running when state was last saved and should auto-resume. */
+export function loadMlState(): boolean {
   // Also try legacy filename from v1
   const legacyFile = join(DATA_DIR, "ml-state.json");
 
@@ -72,7 +76,7 @@ export function loadMlState(): void {
 
   if (!raw) {
     logger.info("No saved bot state found — starting fresh");
-    return;
+    return false;
   }
 
   try {
@@ -116,11 +120,17 @@ export function loadMlState(): void {
         patterns: patternCount,
         paperBalance: store.paperBalance,
         tradeHistory: store.trades.length,
+        botRunning: state.botRunning ?? false,
         savedAt: state.savedAt,
       },
       "Bot state restored"
     );
+
+    // Return whether the bot should auto-start (only safe for paper mode)
+    return state.botRunning === true && store.settings.mode === "paper";
   } catch (err) {
     logger.warn({ err }, "Failed to load bot state — starting fresh");
+    return false;
   }
 }
+
