@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "savedAt": "2026-06-06T02:16:56.468Z",
-  "paperBalance": 70.23243053111636,
+  "savedAt": "2026-06-06T02:25:41.466Z",
+  "paperBalance": 47.54479307281745,
   "trades": [
     {
       "id": "mpyrbmdjjk7o3",
@@ -2035,11 +2035,11 @@
       "krakenPair": "AVAXUSD",
       "name": "Avalanche",
       "entryPrice": 6.732,
-      "currentPrice": 6.699,
+      "currentPrice": 6.73,
       "quantity": 3.6962693353061034,
       "investedUsd": 24.88328516528069,
-      "profitPercent": -0.4901960784313779,
-      "profitUsd": -0.12197688806510243,
+      "profitPercent": -0.02970885323826173,
+      "profitUsd": -0.007392538670611515,
       "status": "open",
       "strategy": "Voting Consensus",
       "winningStrategies": [
@@ -2055,6 +2055,60 @@
       "trailingActive": false,
       "entryConfidence": 0.3773995590178726,
       "closeReason": null
+    },
+    {
+      "id": "mq1q2rv9csez3",
+      "symbol": "TRX",
+      "krakenPair": "TRXUSD",
+      "name": "TRON",
+      "entryPrice": 0.320209,
+      "currentPrice": 0.31984,
+      "quantity": 70.8117906833282,
+      "investedUsd": 22.67457268291784,
+      "profitPercent": -0.11523723568045338,
+      "profitUsd": -0.026129550762149734,
+      "status": "closed",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "macd",
+        "bollinger",
+        "ml"
+      ],
+      "openedAt": "2026-06-06T02:16:56.469Z",
+      "closedAt": "2026-06-06T02:22:26.464Z",
+      "paperMode": true,
+      "highestPrice": 0.320209,
+      "trailingActive": false,
+      "entryConfidence": 0.3286328662896747,
+      "closeReason": "swapped"
+    },
+    {
+      "id": "mq1q9uhtxrm03",
+      "symbol": "VET",
+      "krakenPair": "VETUSD",
+      "name": "VeChain",
+      "entryPrice": 0.004731,
+      "currentPrice": 0.004726,
+      "quantity": 4790.003785148334,
+      "investedUsd": 22.661507907536766,
+      "profitPercent": -0.10568590150073551,
+      "profitUsd": -0.023950018925738448,
+      "status": "open",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "rsi",
+        "bollinger",
+        "vwap",
+        "ml"
+      ],
+      "openedAt": "2026-06-06T02:22:26.465Z",
+      "closedAt": null,
+      "paperMode": true,
+      "highestPrice": 0.004739,
+      "trailingActive": false,
+      "entryConfidence": 0.35517125813967765,
+      "closeReason": null
     }
   ],
   "settings": {
@@ -2066,26 +2120,26 @@
     "voteThreshold": 3
   },
   "botRunning": true,
-  "learningCycles": 301,
+  "learningCycles": 305,
   "strategyStats": [
     {
       "id": "rsi",
-      "weight": 1.4000000000000001,
-      "totalSignals": 68,
+      "weight": 1.384057971014493,
+      "totalSignals": 69,
       "successfulSignals": 34,
       "profitContribution": 24.399041104771886
     },
     {
       "id": "macd",
-      "weight": 1.3702702702702705,
-      "totalSignals": 37,
+      "weight": 1.342105263157895,
+      "totalSignals": 38,
       "successfulSignals": 18,
       "profitContribution": 7.978575850701764
     },
     {
       "id": "bollinger",
-      "weight": 1.437931034482759,
-      "totalSignals": 58,
+      "weight": 1.4186440677966103,
+      "totalSignals": 59,
       "successfulSignals": 30,
       "profitContribution": 22.859857761052854
     },
@@ -2112,8 +2166,8 @@
     },
     {
       "id": "ml",
-      "weight": 1.4192982456140353,
-      "totalSignals": 57,
+      "weight": 1.4000000000000001,
+      "totalSignals": 58,
       "successfulSignals": 29,
       "profitContribution": 16.216129151672927
     }
@@ -2413,6 +2467,11 @@
       "wins": 0,
       "losses": 1,
       "totalProfit": -1.3111010739737035
+    },
+    "bollinger|macd|ml|rsi:UDDDUUD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -0.11523723568045338
     }
   }
 }
