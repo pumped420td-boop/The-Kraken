@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "savedAt": "2026-06-06T01:59:54.397Z",
-  "paperBalance": 72.5907671583467,
+  "savedAt": "2026-06-06T02:16:56.468Z",
+  "paperBalance": 70.23243053111636,
   "trades": [
     {
       "id": "mpyrbmdjjk7o3",
@@ -1819,12 +1819,12 @@
       "krakenPair": "XETHZUSD",
       "name": "Ethereum",
       "entryPrice": 1594.08,
-      "currentPrice": 1583.44,
+      "currentPrice": 1573.18,
       "quantity": 0.014318099987318906,
       "investedUsd": 22.82419682778532,
-      "profitPercent": -0.6674696376593316,
-      "profitUsd": -0.152344583865073,
-      "status": "open",
+      "profitPercent": -1.3111010739737035,
+      "profitUsd": -0.2992482897349653,
+      "status": "closed",
       "strategy": "Voting Consensus",
       "winningStrategies": [
         "rsi",
@@ -1833,12 +1833,12 @@
         "ml"
       ],
       "openedAt": "2026-06-06T00:37:50.390Z",
-      "closedAt": null,
+      "closedAt": "2026-06-06T02:16:56.467Z",
       "paperMode": true,
       "highestPrice": 1597.73,
       "trailingActive": false,
       "entryConfidence": 0.2912257892268243,
-      "closeReason": null
+      "closeReason": "swapped"
     },
     {
       "id": "mq1mjy4ru7l5m",
@@ -2028,6 +2028,33 @@
       "trailingActive": false,
       "entryConfidence": 0.3751486043266647,
       "closeReason": "swapped"
+    },
+    {
+      "id": "mq1pi588d7c6b",
+      "symbol": "AVAX",
+      "krakenPair": "AVAXUSD",
+      "name": "Avalanche",
+      "entryPrice": 6.732,
+      "currentPrice": 6.699,
+      "quantity": 3.6962693353061034,
+      "investedUsd": 24.88328516528069,
+      "profitPercent": -0.4901960784313779,
+      "profitUsd": -0.12197688806510243,
+      "status": "open",
+      "strategy": "Voting Consensus",
+      "winningStrategies": [
+        "macd",
+        "bollinger",
+        "vwap",
+        "ml"
+      ],
+      "openedAt": "2026-06-06T02:00:54.008Z",
+      "closedAt": null,
+      "paperMode": true,
+      "highestPrice": 6.745,
+      "trailingActive": false,
+      "entryConfidence": 0.3773995590178726,
+      "closeReason": null
     }
   ],
   "settings": {
@@ -2038,19 +2065,20 @@
     "maxConcurrentTrades": 2,
     "voteThreshold": 3
   },
-  "learningCycles": 297,
+  "botRunning": true,
+  "learningCycles": 301,
   "strategyStats": [
     {
       "id": "rsi",
-      "weight": 1.4164179104477614,
-      "totalSignals": 67,
+      "weight": 1.4000000000000001,
+      "totalSignals": 68,
       "successfulSignals": 34,
       "profitContribution": 24.399041104771886
     },
     {
       "id": "macd",
-      "weight": 1.4000000000000001,
-      "totalSignals": 36,
+      "weight": 1.3702702702702705,
+      "totalSignals": 37,
       "successfulSignals": 18,
       "profitContribution": 7.978575850701764
     },
@@ -2070,8 +2098,8 @@
     },
     {
       "id": "vwap",
-      "weight": 1.415492957746479,
-      "totalSignals": 71,
+      "weight": 1.4000000000000001,
+      "totalSignals": 72,
       "successfulSignals": 36,
       "profitContribution": 24.49396769975641
     },
@@ -2084,8 +2112,8 @@
     },
     {
       "id": "ml",
-      "weight": 1.4392857142857145,
-      "totalSignals": 56,
+      "weight": 1.4192982456140353,
+      "totalSignals": 57,
       "successfulSignals": 29,
       "profitContribution": 16.216129151672927
     }
@@ -2380,6 +2408,11 @@
       "wins": 1,
       "losses": 0,
       "totalProfit": 0.014810426540294101
+    },
+    "macd|ml|rsi|vwap:UUDDUDD": {
+      "wins": 0,
+      "losses": 1,
+      "totalProfit": -1.3111010739737035
     }
   }
 }
