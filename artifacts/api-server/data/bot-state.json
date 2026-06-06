@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "savedAt": "2026-06-06T02:25:41.466Z",
+  "savedAt": "2026-06-06T02:30:41.467Z",
   "paperBalance": 47.54479307281745,
   "trades": [
     {
@@ -2035,11 +2035,11 @@
       "krakenPair": "AVAXUSD",
       "name": "Avalanche",
       "entryPrice": 6.732,
-      "currentPrice": 6.73,
+      "currentPrice": 6.695,
       "quantity": 3.6962693353061034,
       "investedUsd": 24.88328516528069,
-      "profitPercent": -0.02970885323826173,
-      "profitUsd": -0.007392538670611515,
+      "profitPercent": -0.5496137849079014,
+      "profitUsd": -0.13676196540632546,
       "status": "open",
       "strategy": "Voting Consensus",
       "winningStrategies": [
@@ -2089,11 +2089,11 @@
       "krakenPair": "VETUSD",
       "name": "VeChain",
       "entryPrice": 0.004731,
-      "currentPrice": 0.004726,
+      "currentPrice": 0.004732,
       "quantity": 4790.003785148334,
       "investedUsd": 22.661507907536766,
-      "profitPercent": -0.10568590150073551,
-      "profitUsd": -0.023950018925738448,
+      "profitPercent": 0.021137180300150764,
+      "profitUsd": 0.004790003785149821,
       "status": "open",
       "strategy": "Voting Consensus",
       "winningStrategies": [
